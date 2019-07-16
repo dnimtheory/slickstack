@@ -30,6 +30,7 @@ title: SlickStack (Public Mirrors)
 * <a href="ss-clean.txt">ss-clean.txt</a>
 * <a href="ss-config-sample.txt">ss-config-sample.txt</a>
 * <a href="ss-dump.txt">ss-dump.txt</a>
+* <a href="ss-encrypt.txt">ss-encrypt.txt</a>
 * <a href="ss-install.txt">ss-install.txt</a>
 * <a href="ss-muplugs.txt">ss-muplugs.txt</a>
 * <a href="ss-perms.txt">ss-perms.txt</a>
@@ -61,4 +62,4 @@ title: SlickStack (Public Mirrors)
 
 ----
 
-*Last updated: Jun 22, 2019*
+*Last updated: Jul 13, 2019*

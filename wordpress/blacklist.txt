@@ -62,6 +62,7 @@
 ;; 99robots ;;
 ;; Ademti Software ;;
 ;; Andrew Ozz ;;
+;; Austin Ginder ;;
 ;; Automattic (besides Jetpack-integrated products) ;;
 ;; Ben Word ;;
 ;; Benjamin Denis ;;
@@ -70,6 +71,7 @@
 ;; Delicious Brains (Brad Touesnard) ;;
 ;; Devin Vinson ;;
 ;; Elliot Condon ;;
+;; Enrico Battocchi ;;
 ;; Frank Goossens ;;
 ;; Frédéric Demarle ;;
 ;; GoDadady ;;
@@ -80,6 +82,7 @@
 ;; Jeff Starr ;;
 ;; John Blackbourn ;;
 ;; Justin Tadlock ;;
+;; Kathy Darling ;;
 ;; Leon Stafford ;;
 ;; MailPoet ;;
 ;; Metorik ;;
@@ -1312,7 +1315,7 @@ wistia-wordpress-oembed-plugin ;; serious errors, outdated code, not maintained
 /genesis-grid-loop/ ;; not maintained
 /featured-video/ ;; not maintained, serious errors
 /nofollow/ ;; serious errors, creates instability, not maintained
-;; sendgrid-email-delivery-simplified ;; serious errors, not maintained (temp whitelist to not confuse LittleBizzy clients)
+sendgrid-email-delivery-simplified ;; serious errors, not maintained (temp whitelist to not confuse LittleBizzy clients)
 header-and-footer-scripts ;; not maintained, better options exist
 youtube-embed-plus ;; excessive api calls, bloated, poor coding (e.g. many api calls on every page)
 youtube-embed-plus-pro ;; excessive api calls, bloated, poor coding (e.g. many api calls on every page)
@@ -1401,6 +1404,7 @@ wp-user-frontend ;; bloated, bad practice (too many functions), poor coding, hij
 ;; email-notification-on-admin-login ;; excessive logging, pointless
 ;; enable-media-replace ;; dashboard hijacking (shortpixel)
 ;; essential-grid ;; bloated
+;; front-end-pm ;; potential security nightmare
 ;; /export-user-data/ ;; not maintained (but still works for the moment)
 ;; formlift-individual-styling ;; deprecated (wrong, its been converted to private repo)
 ;; forums-censure-pro ;; possible resource intensive, no public docs (gVectors Team)
@@ -1556,7 +1560,7 @@ truconversion-connect ;; utility
 update-theme-and-plugins-from-zip-file ;; import/export
 users-customers-import-export-for-wp-woocommerce ;; import/export
 vendidero-helper
-video-user-manuals ;; utility
+;; video-user-manuals ;; utility
 what-the-file ;; utility
 widget-importer-exporter ;; import/export
 /wordpress-reset/ ;; utility

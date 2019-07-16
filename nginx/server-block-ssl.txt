@@ -9,6 +9,11 @@
 #### module version: Nginx (Extras) 1.15.8 #########################################################
 ####################################################################################################
 
+## Ref: https://blog.tylerbuchea.com/nginx-lets-encrypt-certbot-manual-installation/
+## Ref: https://ncona.com/2017/01/free-https-with-lets-encrypt/
+## Ref: https://certbot.eff.org/docs/using.html
+## Ref: https://advancedweb.hu/2018/06/05/letsencrypt_webroot_vs_standalone/
+
 ## this catch-all server block redirects all erroneous traffic to the canonical domain ##
 server {
     listen                 80 default_server;
@@ -18,26 +23,33 @@ server {
     server_name            _;
     ssl_certificate        /etc/ssl/nginx.crt;
     ssl_certificate_key    /etc/ssl/nginx.key;
+    ## ssl_certificate /etc/letsencrypt/live/@DOMAIN/fullchain.pem;
+    ## ssl_certificate_key /etc/letsencrypt/live/@DOMAIN/privkey.pem;
+    ## ssl_trusted_certificate /etc/letsencrypt/live/YOUR-DOMAIN/chain.pem; ## for stapling A+ score
     return 301             https://@DOMAIN$request_uri;
 }
 
-## this server block is the canonical domain ##
+####################################################################################################
+#### Nginx Server Block: Canonical Domain (Optimized For CloudFlare = No HTTP/2) ###################
+####################################################################################################
+
 server {
-    listen                 443 ssl;
-    listen                 [::]:443 ssl ipv6only=on;
+    listen                 443 ssl; ## 443 ssl http2;
+    listen                 [::]:443 ssl ipv6only=on; ## 443 ssl http2 ipv6only=on;
     server_name            @DOMAIN;
     if ($http_host != "@DOMAIN") {
         return 301             $scheme://@DOMAIN$request_uri;
     }
     
     ## redirect */index.php requests
-    ## https://stackoverflow.com/a/21813759/1718491
+    ## Ref: https://stackoverflow.com/a/21813759/1718491
+    
     if ($request_uri ~* "^(.*/)index\.php$") {
         return 301 $1;
     }
 
 ####################################################################################################
-#### Server Block: FastCGI Cache Settings ##########################################################
+#### Nginx Server Block: FastCGI Cache Settings ####################################################
 ####################################################################################################
 
     ## set to either 1/0 to skip fastcgi cache by default ##
@@ -118,12 +130,16 @@ server {
         ## below line should not be needed
         # include snippets/fastcgi-php.conf;
     }
+    
+    location = /.well-known* {
+        allow all;
+    }
 
     #### HIDDEN FILES ####
     location ~ /\. {
         ## block any attempted attacks or access
-	log_not_found off;
-	deny all;
+	# log_not_found off;
+	# deny all;
     }
 
     #### BRUTE FORCE PROTECTION ####

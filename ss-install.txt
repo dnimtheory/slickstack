@@ -25,6 +25,7 @@
 ## Ref: https://github.com/bajpangosh/High-Traffic-wordpress-server-configuration ##
 ## Ref: https://gist.github.com/nickfox-taterli/2c283d73ba817392fb0f9f15d9cfa514 ##
 ## Ref: https://gist.github.com/beardedinbinary/79d7ad34f9980f0a4c23 ##
+## Ref: https://www.linuxbabe.com/security/letsencrypt-webroot-tls-certificate
 
 ## include SlickStack configuration ##
 source /var/www/ss-config
@@ -38,7 +39,7 @@ source /var/www/ss-config
 # fi
 
 ## verify ss-config build matches ss-install build ##
-if [[ "$SLICKSTACK_BUILD" != "JUL2019V" ]];
+if [[ "$SLICKSTACK_BUILD" != "JUL2019VV" ]];
     then echo -e "\e[93mYour ss-config file is outdated. Please rebuild it and run ss-install again.\e[0m" >&2
     exit 1
 fi
@@ -86,9 +87,6 @@ DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/u
 ## upgrade existing repos ##
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade
 
-## autoremove ##
-DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" autoremove
-
 ## install update-manager-core ##
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install update-manager-core
 
@@ -100,6 +98,23 @@ DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/u
 
 ## install ClamAV ##
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install clamav
+
+####################################################################################################
+#### Install Cerbot (Let's Encrypt) Packages Via Ubuntu Repos ######################################
+####################################################################################################
+
+## install software-properties-common (for Certbot) ##
+DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install software-properties-common
+
+## add custom PPAs (for Certbot) ##
+DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" add-apt-repository universe
+DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" add-apt-repository ppa:certbot/certbot
+
+## update again after adding custom ppas ##
+DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" update
+
+## install Certbot ##
+DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install certbot python-certbot-nginx
 
 ####################################################################################################
 #### configure Ubuntu users, permissions, and defaults #############################################
@@ -265,17 +280,11 @@ source /home/wp-completion.bash' >> /home/${SUDO_USER}/.bashrc
 source /home/${SUDO_USER}/.bashrc
 
 ####################################################################################################
-#### Configure OpenSSL (via Ubuntu) ################################################################
+#### Install OpenSSL + Certbot (Let's Encrypt) Free SSL Certificates ###############################
 ####################################################################################################
 
-## MESSAGE: explain repos ##
-echo -e "\e[36mConfiguring various OpenSSL settings and permissions...\e[0m"
-
-openssl req -new -x509 -nodes -days 730 -newkey rsa:2048 -keyout /etc/ssl/nginx.key -out /etc/ssl/nginx.crt -subj "/C=${SSL_COUNTRY}/ST=${SSL_STATE}/L=${SSL_CITY}/O=${SSL_COMPANY}/OU=${SSL_DEPT}/CN=${SITE_DOMAIN}"
-
-## reset permissions ##
-chown root:root /etc/ssl/nginx.key
-chown root:root /etc/ssl/nginx.crt
+## include ss-encrypt script here ##
+source /var/www/ss-encrypt
 
 ####################################################################################################
 #### Install Nginx-Extras (Current Ubuntu Repo Version) ############################################
@@ -619,12 +628,12 @@ sed -i "s/@TLD/${SITE_TLD}/g" /tmp/wp-config.txt
 ####################################################################################################
 
 ## replace SFTP Details placeholders ##
-sed -i "s/@SFTPDETAILSUSER/${SFTP_USER}/g" /var/www/html/wp-config.php
-sed -i "s/@SFTPDETAILSPASSWORD/${SFTP_PASSWORD}/g" /var/www/html/wp-config.php
+sed -i "s/@SFTP_USER/${SFTP_USER}/g" /var/www/html/wp-config.php
+sed -i "s/@SFTP_PASSWORD/${SFTP_PASSWORD}/g" /var/www/html/wp-config.php
 
 ## replace CloudFlare placeholders ##
-sed -i "s/@CLOUDFLAREAPIKEY/${CLOUDFLARE_API_KEY}/g" /tmp/wp-config.txt
-sed -i "s/@CLOUDFLAREAPIEMAIL/${CLOUDFLARE_API_EMAIL}/g" /tmp/wp-config.txt
+sed -i "s/@CLOUDFLARE_API_KEY/${CLOUDFLARE_API_KEY}/g" /tmp/wp-config.txt
+sed -i "s/@CLOUDFLARE_API_EMAIL/${CLOUDFLARE_API_EMAIL}/g" /tmp/wp-config.txt
 
 ####################################################################################################
 #### generate WordPress salt keys for /var/www/html/wp-config.php ##################################
