@@ -21,15 +21,18 @@ source /var/www/ss-config
 ####################################################################################################
 
 ## create wordpress group if does not exist ##
-addgroup wordpress
+addgroup wordpress &> /dev/null
 
 ## add SFTP (non-sudo) user and Nginx server user to the wordpress group ##
-if [[ -z "$SFTP_USER" ]];
-then adduser $user wordpress
-else adduser $SFTP_USER wordpress
+if [[ -z "$SFTP_USER" ]]; then 
+    adduser $user wordpress &> /dev/null
+else 
+    adduser $SFTP_USER wordpress &> /dev/null
 fi
 
-adduser www-data wordpress
+
+
+adduser www-data wordpress &> /dev/null
 
 ## reset Ubuntu system files permissions ##
 chown root:root /etc/ssh/sshd_config
@@ -57,14 +60,20 @@ mkdir -p /var/www/html/wp-content/uploads
 mkdir -p /var/www/html/wp-content/upgrade
 
 ## chown ##
-if [[ -z "$SFTP_USER" ]];
-then chown -R $user:wordpress /var/www/html
-else chown -R $SFTP_USER:wordpress /var/www/html
+if [[ -z "$SFTP_USER" ]]; then 
+    chown -R $user:wordpress /var/www/html
+else 
+    chown -R $SFTP_USER:wordpress /var/www/html
 fi
 
 ## ensure files exist ##
-if [ ! -f "/var/www/html/wp-content/blacklist.txt" ]; then touch "/var/www/html/wp-content/blacklist.txt"; fi
-if [ ! -f "/var/www/html/wp-content/functions.php" ]; then touch "/var/www/html/wp-content/functions.php"; fi
+if [ ! -f "/var/www/html/wp-content/blacklist.txt" ]; then 
+    touch "/var/www/html/wp-content/blacklist.txt"
+fi
+    
+if [ ! -f "/var/www/html/wp-content/functions.php" ]; then 
+    touch "/var/www/html/wp-content/functions.php"
+fi
 
 # chown -R www-data:www-data /var/www/html/wp-config.php
 chown -R www-data:wordpress /var/www/html/wp-content/temp
@@ -130,22 +139,33 @@ chown www-data:www-data /var/www/cache
 chmod 775 /var/www/cache
 
 ####################################################################################################
+## Reset Permissions: SlickStack Meta Files ########################################################
+####################################################################################################
+
+## create meta directory (will not overwrite if exists already) ##
+mkdir -p /var/www/meta
+
+## reset permissions ##
+chown www-data:www-data /var/www/meta
+chmod 775 /var/www/meta
+
+####################################################################################################
 ## Reset Permissions: OpenSSL (Nginx) Files ########################################################
 ####################################################################################################
 
-if [[ -f "/etc/ssl/nginx.crt" ]];
-    then chown root:root /etc/ssl/nginx.crt
-    then chmod -R 700 /etc/ssl/nginx.crt
+if [[ -f "/etc/ssl/nginx.crt" ]]; then 
+    chown root:root /etc/ssl/nginx.crt
+    chmod -R 700 /etc/ssl/nginx.crt
 fi
 
-if [[ -f "/etc/ssl/nginx.key" ]];
-    then chown root:root /etc/ssl/nginx.key
-    then chmod -R 700 /etc/ssl/nginx.key
+if [[ -f "/etc/ssl/nginx.key" ]]; then 
+    chown root:root /etc/ssl/nginx.key
+    chmod -R 700 /etc/ssl/nginx.key
 fi
 
-if [[ -f "/etc/ssl/nginx.pem" ]];
-    then chown root:root /etc/ssl/nginx.pem
-    then chmod -R 700 /etc/ssl/nginx.pem
+if [[ -f "/etc/ssl/nginx.pem" ]]; then 
+    chown root:root /etc/ssl/nginx.pem
+    chmod -R 700 /etc/ssl/nginx.pem
 fi
 
 ####################################################################################################

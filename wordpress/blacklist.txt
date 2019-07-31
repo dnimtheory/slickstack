@@ -4,8 +4,8 @@
 ;;;; mirror: http://mirrors.slickstack.io/wordpress/blacklist.txt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; path: /var/www/html/wp-content/blacklist.txt ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; destination: n/a (not a boilerplate) ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; purpose: Plugin Blacklist (ini) configuration file ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; ss version: SlickStack alpha ss5a ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; purpose: Plugin Blacklist (ini) configuration file (updated regularly) ;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; ss version: SlickStack alpha ss5c ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; module version: Plugin Blacklist 1.1.1 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -61,6 +61,7 @@
 ;; 10up ;;
 ;; 99robots ;;
 ;; Ademti Software ;;
+;; Andrew Munro ;;
 ;; Andrew Ozz ;;
 ;; Austin Ginder ;;
 ;; Automattic (besides Jetpack-integrated products) ;;
@@ -68,6 +69,7 @@
 ;; Benjamin Denis ;;
 ;; BracketSpace ;;
 ;; Brad Touesnard ;;
+;; BuddyBoss ;;
 ;; Delicious Brains (Brad Touesnard) ;;
 ;; Devin Vinson ;;
 ;; Elliot Condon ;;
@@ -78,6 +80,7 @@
 ;; Human Made ;;
 ;; IgniteWoo ;;
 ;; Janis Elsts ;;
+;; Jason Bahl ;;
 ;; Jeff Matson ;;
 ;; Jeff Starr ;;
 ;; John Blackbourn ;;
@@ -88,6 +91,7 @@
 ;; Metorik ;;
 ;; Mika Epstein ;;
 ;; Mike Jolley ;;
+;; Modern Tribe (seems to be a bit hit or miss however due to overly distributed team) ;;
 ;; Nicolas Kuttler ;;
 ;; OceanWP ;;
 ;; OM4 (Glenn Nicholas, James Collins) ;;
@@ -95,10 +99,12 @@
 ;; Peter Suhm ;;
 ;; Pressjitsu (Eric Mann, Erick Hitter) ;;
 ;; Prospress ;;
+;; Red Sand Media Group (Scott Allen) ;;
 ;; René Hermenau ;;
 ;; Roots (Ben Word) ;;
 ;; rtCamp ;;
 ;; Sandhills Development (Pippin Williamson) ;;
+;; Scott Allen ;;
 ;; Sergey Biryukov ;;
 ;; SEOPress (Benjamin Denis) ;;
 ;; Shea Bunge ;;
@@ -132,10 +138,12 @@
 ;; Bhanu Ahluwalia ;;
 ;; Brian Lee Jackson ;;
 ;; Jetpack ;;
+;; Kinsta (Brian Jackon, Alex Panagis, Jon Penland, Mark Gavalda) ;;
+;; Kodemann ;; all plugins are abandoned ;;
 ;; Macho Themes (Alex Panagis) ;;
-;; MyThemeShop (Bhanu Ahluwalia, Suraj Vibhute) ;;
+;; MyThemeShop (Bhanu Ahluwalia, Suraj Vibhute) ;; spyware, ransomware, death threats, consumer fraud ;;
 ;; OptimizePress ;;
-;; Rank Math SEO (Bhanu Ahluwalia, Suraj Vibhute) ;; 
+;; Rank Math SEO (Bhanu Ahluwalia, Suraj Vibhute) ;; spyware, ransomware, death threats, consumer fraud ;;
 ;; PerfMatters (Brian Lee Jackson) ;; 
 ;; Pipdig (Phil Clothier) ;; 
 ;; Phil Clothier ;;
@@ -146,6 +154,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Rymera Web ;; WP-Cron abuse, database thrashing ;;
+;;  Josh Kohlbach (Rymera Web) ;; blames SlickStack for his poor code instead of fixing it ;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; 3. Not Recommended Plugin Vendors (Possibly Disallowed In The Future) ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -162,6 +171,8 @@
 ;; Om Ak Solutions (Ankit Singla, Nikhil Khokhar, Savi Goyal) ;;
 ;; OnTheGoSystems (WPML, Toolset) ;; bloated, poor coding, security issues
 ;; Photocrati (Imagely / NextGen Gallery) ;;
+;; PixelYourSite ;; spammy
+;; Qode Themes ;; poor coding, errors, poor maintenance
 ;; ShortPixel ;; spammy, generates junk files
 ;; Soliloquy (WPBeginner) ;;
 ;; StudioPress ;; proprietary frameworks
@@ -174,6 +185,7 @@
 ;; WP Desk ;; poor coding, tracking (spyware)
 ;; WPBeginner ;;
 ;; WPClever.net ;;
+;; WpIndeed ;; poor coding, serious errors
 ;; WPMU DEV ;;
 ;; YITH ;; spammy, security issues, poor coding
 ;; Team Yoast ;;
@@ -747,6 +759,7 @@ picasa-express-x2 ;; deprecated
 piio-image-optimization ;; bloated, creates junk files
 pipdig ;; malware company (Pipdig)
 pipdig-cookie-banner ;; malware company (Pipdig)
+pipdig-custom-credit ;; malware company (Pipdig)
 pipdig-snapcode-widget ;; malware company (Pipdig)
 pipdisqus ;; malware company (Pipdig)
 pirate-forms ;; not maintained, spamware (WPForms), smtp blacklist risk
@@ -777,6 +790,7 @@ psn-pagespeed-ninja ;; ss conflicts
 purchased-items-column-woocommerce ;; malware company (Pipdig)
 pushengage ;; resource intensive
 qards ;; closed-source page builder, serious errors, bad practice (only supports its own custom post types?)
+qode-instagram-widget ;; not maintained, serious errors, no public docs
 query-string-remover-from-static-resources ;; ss conflicts
 quick-pagepost-redirect-plugin ;; not maintained, bizarre code, better options exist
 /quick-sharing/ ;; better options exist
@@ -1277,6 +1291,9 @@ The following plugins will be disallowed on our network in December 2020, please
 ;; match any path (case insensitive)
 ;; for exact directory matches use slashes e.g. /revslider/
 [path future]
+floating-social-media-icon ;; bloated, bad practice
+/postman-smtp/ ;; deprecated
+themetrust-social ;; not maintained, no public changelog, better options exist
 addons-for-beaver-builder ;; hacks other vendor products, creates instability, bad practice (buy the Pro version)
 /landing-pages/ ;; serious errors, creates instability, poor coding
 responsive-video-shortcodes ;; not maintained
@@ -1329,7 +1346,6 @@ solid-code-theme-editor ;; deprecated
 alpine-photo-tile-for-instagram ;; not maintained, better options exist, no public docs
 creative-clans-embed-script ;; not maintained
 widgets-controller ;; not maintained
-;; ld-visual-customizer ;; not maintained, changes other plugins, creates instability
 wp-external-links ;; not maintained, bizarre code
 wp-page-widget ;; bad practice, serious errors, JS conflicts, not maintained
 wp-masonry-layout ;; not maintained
@@ -1353,6 +1369,7 @@ flexi-quote-rotator ;; not maintained
 search-by-algolia-instant-relevant-results ;; deprecated
 widget-title-links ;; not maintained (by @ragulka on GitHub)
 wp-user-frontend ;; bloated, bad practice (too many functions), poor coding, hijacks wp admin
+;; ld-visual-customizer ;; not maintained, changes other plugins, creates instability
 ;; native-ads-adnow ;; possibly abandoned
 ;; link-to-telegram ;; abandoned
 ;; yith-woocommerce-order-tracking ;; scamware (does not send tracking unless you upgrade)
@@ -1367,8 +1384,10 @@ wp-user-frontend ;; bloated, bad practice (too many functions), poor coding, hij
 ;; /instapage/ ;; serious errors (curl error 28), excessive api calls
 ;; unbounce ;; creates instability, closed source page builder, poor coding
 ;; wp-better-emails ;; not maintained
+;; export-featured-images ;; abandoned but still seems to work
 ;; super-socializer ;; possible excessive logging, bloated
 ;; fluid-video-embeds ;; not maintained
+;; /wp-less/ ;; not maintained
 ;; fullwidth-templates ;; creates instability (by Brainstorm Force)
 ;; pixproof ;; not maintained
 ;; genesis-connect-woocommerce ;; creates instability, bad practice, tries to replace native WC functions
@@ -1556,6 +1575,7 @@ pw-bulk-edit ;; utility
 query-monitor ;; utility
 /regenerate-thumbnails/ ;; utility (now maintained by Automattic, R.I.P. Alex Mills)
 show-current-template ;; utility
+tls-1-2-compatibility-test ;; utility
 truconversion-connect ;; utility
 update-theme-and-plugins-from-zip-file ;; import/export
 users-customers-import-export-for-wp-woocommerce ;; import/export

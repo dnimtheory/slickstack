@@ -7,25 +7,11 @@
 #### path: /var/www/ss-install #####################################################################
 #### destination: n/a (not a boilerplate) ##########################################################
 #### purpose: installs all SlickStack server LEMP modules, etc (idempotent) ########################
-#### ss version: SlickStack alpha ss6c #############################################################
+#### ss version: SlickStack alpha ss6e #############################################################
 #### module version: n/a ###########################################################################
 ####################################################################################################
 
 ## SS-CONFIG MUST BE CONFIGURED BEFORE RUNNING THIS INSTALL SCRIPT ##
-
-## Ref: http://wproller.com ##
-## Ref: https://github.com/bjornjohansen/deploy-wp-on-vps/blob/master/deploy.sh ##
-## Ref: https://github.com/sm0k3net/Useful-Scripts/blob/master/wordpress.sh ##
-## Ref: https://github.com/techandme/wordpress-vm ##
-## Ref: https://github.com/QROkes/webinoly ##
-## Ref: https://github.com/WordOps/WordOps ##
-## Ref: https://www.isicca.com/en/lemp-howto-install-nginx-php7-mariadb/ ##
-## Ref: https://gist.github.com/FeChagas/54b0cdf354b197dc8e417357d7687e8b ##
-## Ref: https://github.com/GeekPress/WP-Quick-Install ##
-## Ref: https://github.com/bajpangosh/High-Traffic-wordpress-server-configuration ##
-## Ref: https://gist.github.com/nickfox-taterli/2c283d73ba817392fb0f9f15d9cfa514 ##
-## Ref: https://gist.github.com/beardedinbinary/79d7ad34f9980f0a4c23 ##
-## Ref: https://www.linuxbabe.com/security/letsencrypt-webroot-tls-certificate
 
 ## include SlickStack configuration ##
 source /var/www/ss-config
@@ -39,8 +25,8 @@ source /var/www/ss-config
 # fi
 
 ## verify ss-config build matches ss-install build ##
-if [[ "$SLICKSTACK_BUILD" != "JUL2019VV" ]];
-    then echo -e "\e[93mYour ss-config file is outdated. Please rebuild it and run ss-install again.\e[0m" >&2
+if [[ "$SLICKSTACK_BUILD" != "JUL2019W" ]]; then 
+    echo -e "\e[93mYour ss-config file is outdated. Please rebuild it and run ss-install again.\e[0m" >&2
     exit 1
 fi
 
@@ -69,10 +55,9 @@ chmod 700 /var/www/ss-check
 
 ## call scripts ##
 source /var/www/ss-check
-source /var/www/ss-perms
 
 ####################################################################################################
-#### install SlickStack (LEMP+) modules from latest Ubuntu repos ###################################
+#### Install Various Packages Via Default Ubuntu Repos #############################################
 ####################################################################################################
 
 ## MESSAGE ##
@@ -100,7 +85,7 @@ DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/u
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install clamav
 
 ####################################################################################################
-#### Install Cerbot (Let's Encrypt) Packages Via Ubuntu Repos ######################################
+#### Install Cerbot (Let's Encrypt) Packages Via PPA Repos #########################################
 ####################################################################################################
 
 ## install software-properties-common (for Certbot) ##
@@ -144,7 +129,7 @@ update-alternatives --set editor /bin/nano
 timedatectl set-timezone UTC
 
 ####################################################################################################
-#### Configure Ubuntu: Sudoers (a.k.a. Visudo) #####################################################
+#### Configure Ubuntu: Sudo Users (a.k.a. Visudo) ##################################################
 ####################################################################################################
 
 ## download latest versions ##
@@ -164,7 +149,7 @@ chown root:root /etc/sudoers
 chmod 440 /etc/sudoers
 
 ####################################################################################################
-#### Configure Ubuntu: SSH (SFTP) ##################################################################
+#### Configure Ubuntu: SSH + SFTP User Permissions #################################################
 ####################################################################################################
 
 ## MESSAGE: explain repos ##
@@ -235,6 +220,58 @@ chown root:root /var/spool/cron/crontabs/root
 # chmod 664 /etc/sysctl.conf
 
 ####################################################################################################
+#### Install PHP-FPM 7.2 + Required Extensions #####################################################
+####################################################################################################
+
+## purge PHP 7.0 + PHP 7.1 ##
+DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" purge php7.0
+DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" purge php7.1
+
+## delete PHP 7.0 + PHP 7.1 files ##
+rm -R -f /etc/php/7.0*
+rm -R -f /etc/php/7.1*
+
+## purge PHP 7.2 (so we can install fresh) ##
+DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" purge php7.2
+
+## install PHP 7.2 and extensions ##
+DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install php7.2 php7.2-bcmath php7.2-curl php7.2-fpm php7.2-gd php7.2-imagick php7.2-json php7.2-mbstring php7.2-mysql php7.2-soap php7.2-xml php7.2-zip
+
+# better #
+# DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install php7.2-bcmath php7.2-curl php7.2-fpm php7.2-gd php7.2-imagick php7.2-json php7.2-mbstring php7.2-mysql php7.2-soap php7.2-xml php7.2-zip
+
+## download latest versions ##
+wget --no-cache --no-cookies -O /tmp/php-fpm-conf.txt http://mirrors.slickstack.io/php-fpm/php-fpm-conf.txt
+wget --no-cache --no-cookies -O /tmp/php-ini.txt http://mirrors.slickstack.io/php-fpm/php-ini.txt
+wget --no-cache --no-cookies -O /tmp/www-conf.txt http://mirrors.slickstack.io/php-fpm/www-conf.txt
+
+## rename files ##
+mv /tmp/php-fpm-conf.txt /tmp/php-fpm.conf
+mv /tmp/php-ini.txt /tmp/php.ini
+mv /tmp/www-conf.txt /tmp/www.conf
+
+## copy files to their destinations ##
+cp -R -f --no-preserve=mode,ownership /tmp/php-fpm.conf /etc/php/7.2/fpm/php-fpm.conf
+cp -R -f --no-preserve=mode,ownership /tmp/php.ini /etc/php/7.2/fpm/php.ini
+cp -R -f --no-preserve=mode,ownership /tmp/php.ini /etc/php/7.2/cli/php.ini
+cp -R -f --no-preserve=mode,ownership /tmp/www.conf /etc/php/7.2/fpm/pool.d/www.conf
+
+## customize php settings ##
+# sed -i '/error_log/c\error_log = /var/www/logs/error.log' /etc/php/7.2/fpm/php-fpm.conf
+
+## set default PHP version ##
+update-alternatives --set php /usr/bin/php7.2
+
+## reset permissions ##
+chown root:root /etc/php/7.2/fpm/php-fpm.conf
+chown root:root /etc/php/7.2/fpm/php.ini
+chown root:root /etc/php/7.2/cli/php.ini
+chown root:root /etc/php/7.2/fpm/pool.d/www.conf
+
+## restart services ##
+/etc/init.d/php7.2-fpm restart
+
+####################################################################################################
 ### Install WP-CLI #################################################################################
 ####################################################################################################
 
@@ -280,13 +317,6 @@ source /home/wp-completion.bash' >> /home/${SUDO_USER}/.bashrc
 source /home/${SUDO_USER}/.bashrc
 
 ####################################################################################################
-#### Install OpenSSL + Certbot (Let's Encrypt) Free SSL Certificates ###############################
-####################################################################################################
-
-## include ss-encrypt script here ##
-source /var/www/ss-encrypt
-
-####################################################################################################
 #### Install Nginx-Extras (Current Ubuntu Repo Version) ############################################
 ####################################################################################################
 
@@ -303,7 +333,7 @@ DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/u
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install nginx-extras
 
 ####################################################################################################
-#### Configure Nginx-Extras ########################################################################
+#### Configure Nginx: FastCGI Cache Settings #######################################################
 ####################################################################################################
 
 ## download latest versions ##
@@ -328,6 +358,18 @@ chown www-data:www-data /var/www/cache
 chown root:root /etc/nginx/nginx.conf
 
 ####################################################################################################
+#### Configure Nginx: FastCGI Cache TMPFS Settings (Optional) ######################################
+####################################################################################################
+
+if [[ "$FASTCGI_CACHE_TMPFS" == "true" ]]; then
+    mount -t tmpfs -o size=${FASTCGI_CACHE_MEMORY} tmpfs /var/www/cache
+    sed -i '/tmpfs/d' /etc/fstab
+    echo "tmpfs /var/www/cache tmpfs defaults,size=${FASTCGI_CACHE_MEMORY} 0 0" >> /etc/fstab
+else
+    sed -i '/tmpfs/d' /etc/fstab
+fi
+
+####################################################################################################
 #### Configure Server Block (Nginx-Extras) #########################################################
 ####################################################################################################
 
@@ -345,9 +387,10 @@ sed -i "s/@CACHEVALID/${FASTCGI_CACHE_VALID}/g" /tmp/default.txt
 
 ## enable or disable fastcgi cache ##
 ## set skip_cache default to 0 only if fastcgi cache enabled in ss-config ##
-if [[ "$FASTCGI_CACHE" == "true" ]]
-then sed -i "s/@FASTCGI/0/g" /tmp/default.txt
-else sed -i "s/@FASTCGI/1/g" /tmp/default.txt
+if [[ "$FASTCGI_CACHE" == "false" ]]; then 
+    sed -i "s/@FASTCGI/1/g" /tmp/default.txt
+else 
+    sed -i "s/@FASTCGI/0/g" /tmp/default.txt
 fi
 
 ## rename files ##
@@ -363,54 +406,11 @@ chown root:root /etc/nginx/sites-available/default
 /etc/init.d/nginx restart
 
 ####################################################################################################
-#### install php-fpm 7.2 ###########################################################################
+#### Install OpenSSL + Certbot (Let's Encrypt) Free SSL Certificates ###############################
 ####################################################################################################
 
-## purge php 7.0 and extensions ##
-DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" purge php7.0
-
-## delete PHP 7.0 files ##
-rm -R -f /etc/php/7.0*
-
-## purge php 7.2 and extensions ##
-DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" purge php7.2
-
-## install php 7.2 and extensions ##
-DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install php7.2 php7.2-bcmath php7.2-curl php7.2-fpm php7.2-gd php7.2-imagick php7.2-json php7.2-mbstring php7.2-mysql php7.2-soap php7.2-xml php7.2-zip
-
-# better #
-# DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install php7.2-bcmath php7.2-curl php7.2-fpm php7.2-gd php7.2-imagick php7.2-json php7.2-mbstring php7.2-mysql php7.2-soap php7.2-xml php7.2-zip
-
-## download latest versions ##
-wget --no-cache --no-cookies -O /tmp/php-fpm-conf.txt http://mirrors.slickstack.io/php-fpm/php-fpm-conf.txt
-wget --no-cache --no-cookies -O /tmp/php-ini.txt http://mirrors.slickstack.io/php-fpm/php-ini.txt
-wget --no-cache --no-cookies -O /tmp/www-conf.txt http://mirrors.slickstack.io/php-fpm/www-conf.txt
-
-## rename files ##
-mv /tmp/php-fpm-conf.txt /tmp/php-fpm.conf
-mv /tmp/php-ini.txt /tmp/php.ini
-mv /tmp/www-conf.txt /tmp/www.conf
-
-## copy files to their destinations ##
-cp -R -f --no-preserve=mode,ownership /tmp/php-fpm.conf /etc/php/7.2/fpm/php-fpm.conf
-cp -R -f --no-preserve=mode,ownership /tmp/php.ini /etc/php/7.2/fpm/php.ini
-cp -R -f --no-preserve=mode,ownership /tmp/php.ini /etc/php/7.2/cli/php.ini
-cp -R -f --no-preserve=mode,ownership /tmp/www.conf /etc/php/7.2/fpm/pool.d/www.conf
-
-## customize php settings ##
-# sed -i '/error_log/c\error_log = /var/www/logs/error.log' /etc/php/7.2/fpm/php-fpm.conf
-
-## reset permissions ##
-chown root:root /etc/php/7.2/fpm/php-fpm.conf
-chown root:root /etc/php/7.2/fpm/php.ini
-chown root:root /etc/php/7.2/cli/php.ini
-chown root:root /etc/php/7.2/fpm/pool.d/www.conf
-
-## set default php version ##
-update-alternatives --set php /usr/bin/php7.2
-
-## restart php ##
-/etc/init.d/php7.2-fpm restart
+## include ss-encrypt script here ##
+source /var/www/ss-encrypt
 
 ####################################################################################################
 #### Install MySQL 5.7 #############################################################################
@@ -422,14 +422,16 @@ export DEBIAN_FRONTEND=noninteractive;
 ## store mysql root password ##
 ## http://serverfault.com/a/830352/344471 ##
 
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then echo debconf mysql-server/root_password password ${dbrootpass} | debconf-set-selections
-else echo debconf mysql-server/root_password password ${DB_PASSWORD_ROOT} | debconf-set-selections
+if [[ -z "$DB_PASSWORD_ROOT" ]]; then 
+    echo debconf mysql-server/root_password password ${dbrootpass} | debconf-set-selections
+else 
+    echo debconf mysql-server/root_password password ${DB_PASSWORD_ROOT} | debconf-set-selections
 fi
 
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then echo debconf mysql-server/root_password_again password ${dbrootpass} | debconf-set-selections
-else echo debconf mysql-server/root_password_again password ${DB_PASSWORD_ROOT} | debconf-set-selections
+if [[ -z "$DB_PASSWORD_ROOT" ]]; then 
+    echo debconf mysql-server/root_password_again password ${dbrootpass} | debconf-set-selections
+else 
+    echo debconf mysql-server/root_password_again password ${DB_PASSWORD_ROOT} | debconf-set-selections
 fi
 
 # echo "mysql-server-5.7 mysql-server/root_password password ${dbrootpass}" | debconf-set-selections
@@ -456,9 +458,10 @@ spawn $(which mysql_secure_installation)
 
 ## re-enter root password ##
 expect "Enter password for user root:"
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then send "${dbrootpass}\r"
-else send "${DB_PASSWORD_ROOT}\r"
+if [[ -z "$DB_PASSWORD_ROOT" ]]; then 
+    send "${dbrootpass}\r"
+else 
+    send "${DB_PASSWORD_ROOT}\r"
 fi
 
 ## skip the validate password plugin ##
@@ -504,122 +507,103 @@ echo "Congratulations, MySQL 5.7 is installed and secured. Onward!"
 #### setup mysql 5.7 users #########################################################################
 ####################################################################################################
 
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then mysql -uroot -p${dbrootpass} -e "CREATE DATABASE ${dbname};"
-else mysql -uroot -p${DB_PASSWORD_ROOT} -e "CREATE DATABASE ${DB_NAME};"
+if [[ -z "$DB_PASSWORD_ROOT" ]]; then 
+    mysql -uroot -p${dbrootpass} -e "CREATE DATABASE ${dbname};"
+else 
+    mysql -uroot -p${DB_PASSWORD_ROOT} -e "CREATE DATABASE ${DB_NAME};"
 fi
 
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then mysql -uroot -p${dbrootpass} -e "CREATE USER '${dbuser}'@'localhost' IDENTIFIED BY '${dbuserpass}';"
-else mysql -uroot -p${DB_PASSWORD_ROOT} -e "CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';"
+if [[ -z "$DB_PASSWORD_ROOT" ]]; then 
+    mysql -uroot -p${dbrootpass} -e "CREATE USER '${dbuser}'@'localhost' IDENTIFIED BY '${dbuserpass}';"
+else 
+    mysql -uroot -p${DB_PASSWORD_ROOT} -e "CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';"
 fi
 
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then mysql -uroot -p${dbrootpass} -e "CREATE USER '${dbuser}'@'127.0.0.1' IDENTIFIED BY '${dbuserpass}';"
-else mysql -uroot -p${DB_PASSWORD_ROOT} -e "CREATE USER '${DB_USER}'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';"
+if [[ -z "$DB_PASSWORD_ROOT" ]]; then 
+    mysql -uroot -p${dbrootpass} -e "CREATE USER '${dbuser}'@'127.0.0.1' IDENTIFIED BY '${dbuserpass}';"
+else 
+    mysql -uroot -p${DB_PASSWORD_ROOT} -e "CREATE USER '${DB_USER}'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';"
 fi
 
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then mysql -uroot -p${dbrootpass} -e "GRANT ALL PRIVILEGES ON ${dbname}.* TO '${dbuser}'@'localhost';"
-else mysql -uroot -p${DB_PASSWORD_ROOT} -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';"
+if [[ -z "$DB_PASSWORD_ROOT" ]]; then 
+    mysql -uroot -p${dbrootpass} -e "GRANT ALL PRIVILEGES ON ${dbname}.* TO '${dbuser}'@'localhost';"
+else 
+    mysql -uroot -p${DB_PASSWORD_ROOT} -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';"
 fi
 
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then mysql -uroot -p${dbrootpass} -e "GRANT ALL PRIVILEGES ON ${dbname}.* TO '${dbuser}'@'127.0.0.1';"
-else mysql -uroot -p${DB_PASSWORD_ROOT} -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'127.0.0.1';"
+if [[ -z "$DB_PASSWORD_ROOT" ]]; then 
+    mysql -uroot -p${dbrootpass} -e "GRANT ALL PRIVILEGES ON ${dbname}.* TO '${dbuser}'@'127.0.0.1';"
+else 
+    mysql -uroot -p${DB_PASSWORD_ROOT} -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'127.0.0.1';"
 fi
 
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then mysql -uroot -p${dbrootpass} -e "FLUSH PRIVILEGES;"
-else mysql -uroot -p${DB_PASSWORD_ROOT} -e "FLUSH PRIVILEGES;"
+if [[ -z "$DB_PASSWORD_ROOT" ]]; then 
+    mysql -uroot -p${dbrootpass} -e "FLUSH PRIVILEGES;"
+else 
+    mysql -uroot -p${DB_PASSWORD_ROOT} -e "FLUSH PRIVILEGES;"
 fi
 
 ####################################################################################################
 #### Install WordPress #############################################################################
 ####################################################################################################
 
-## cleanup ##
+## cleanup files ##
 rm -R -f /var/www/html/wordpress*
-rm -R -f /var/www/html/wordpress*.zip*
 rm -R -f /var/www/html/classicpress*
-rm -R -f /var/www/html/classicpress*.zip*
 
-## change dir ##
+## change dir (temp fix) ##
 cd /var/www/html
 
 ## download latest version ##
-if [[ "$SLICKSTACK_APP" == "classicpress" ]];
-    then wget --no-cache --no-cookies -O /var/www/html/classicpress.zip http://mirrors.slickstack.io/classicpress/classicpress.zip
-    else wget --no-cache --no-cookies -O /var/www/html/wordpress.zip http://mirrors.slickstack.io/wordpress/wordpress.zip
+if [[ "$SLICKSTACK_APP" == "classicpress" ]]; then 
+    wget --no-cache --no-cookies -O /var/www/html/classicpress.zip http://mirrors.slickstack.io/classicpress/classicpress.zip
+    unzip -o /var/www/html/classicpress.zip
+    chown -R www-data:wordpress /var/www/html/classicpress
+    chmod 775 /var/www/html/classicpress
+    rm -R -f /var/www/html/wp-admin*
+    rm -R -f /var/www/html/wp-includes*
+    rm -R -f /var/www/html/wp*.php*
+    rm -R -f /var/www/html/index*.php*
+    rm -R -f /var/www/html/composer.json*
+    rsync -raqI /var/www/html/classicpress/* ./
+else 
+    wget --no-cache --no-cookies -O /var/www/html/wordpress.zip http://mirrors.slickstack.io/wordpress/wordpress.zip
+    unzip -o /var/www/html/wordpress.zip
+    chown -R www-data:wordpress /var/www/html/wordpress
+    chmod 775 /var/www/html/wordpress
+    rm -R -f /var/www/html/wp-admin*
+    rm -R -f /var/www/html/wp-includes*
+    rm -R -f /var/www/html/wp*.php*
+    rm -R -f /var/www/html/index*.php*
+    rm -R -f /var/www/html/composer.json*
+    rsync -raqI /var/www/html/wordpress/* ./
 fi
 
-## unzip files ##
-if [[ "$SLICKSTACK_APP" == "classicpress" ]];
-    then unzip -o /var/www/html/classicpress.zip
-    else unzip -o /var/www/html/wordpress.zip
-fi
-
-## reset perms ##
-chown -R www-data:wordpress /var/www/html/classicpress
-chown -R www-data:wordpress /var/www/html/wordpress
-chmod 775 /var/www/html/classicpress
-chmod 775 /var/www/html/wordpress
-
-## unpack files ##
-if [[ "$SLICKSTACK_APP" == "classicpress" ]];
-    then rsync -raqIp /var/www/html/classicpress/* ./
-    else rsync -raqIp /var/www/html/wordpress/* ./
-fi
-
-## cleanup ##
+## cleanup files ##
 rm -R -f /var/www/html/wordpress*
-rm -R -f /var/www/html/wordpress*.zip*
 rm -R -f /var/www/html/classicpress*
-rm -R -f /var/www/html/classicpress*.zip*
 
 ####################################################################################################
 #### Configure WordPress (or ClassicPress) #########################################################
 ####################################################################################################
 
 ## retrieve wp-config.php boilerplate ##
-if [[ -z "$WP_CONFIG_SOURCE" ]];
-then wget --no-cache --no-cookies -O /tmp/wp-config.txt http://mirrors.slickstack.io/wordpress/wp-config.txt
-else wget --no-check-certificate --no-cache --no-cookies -O /tmp/wp-config.txt "$WP_CONFIG_SOURCE"
+if [[ -z "$WP_CONFIG_SOURCE" ]]; then 
+    wget --no-cache --no-cookies -O /tmp/wp-config.txt http://mirrors.slickstack.io/wordpress/wp-config.txt
+else 
+    wget --no-check-certificate --no-cache --no-cookies -O /tmp/wp-config.txt "$WP_CONFIG_SOURCE"
 fi
 
-## old ##
-# sed -i "s/@DBNAME/${dbname}/g" /tmp/wp-config.txt
-# sed -i "s/@DBUSER/${dbuser}/g" /tmp/wp-config.txt
-# sed -i "s/@DBPASSWORD/${dbuserpass}/g" /tmp/wp-config.txt
-# sed -i "s/@TABLEPREFIX/${dbprefix}/g" /tmp/wp-config.txt
-###############
-# sed -i "s/@DBHOST/${dbhost}/g" /tmp/wp-config.txt
-# sed -i "s/@DBCHARSET/${dbcharset}/g" /tmp/wp-config.txt
-# sed -i "s/@DBCOLLATE/${dbcollate}/g" /tmp/wp-config.txt
+## replace database placeholders ##
+sed -i "s/@DB_NAME/${DB_NAME}/g" /tmp/wp-config.txt
+sed -i "s/@DB_USER/${DB_USER}/g" /tmp/wp-config.txt
+sed -i "s/@DB_PASSWORD/${DB_PASSWORD}/g" /tmp/wp-config.txt
+sed -i "s/@DB_HOST/${DB_HOST}/g" /tmp/wp-config.txt
+sed -i "s/@DB_CHARSET/${DB_CHARSET}/g" /tmp/wp-config.txt
+sed -i "s/@DB_COLLATE/${DB_COLLATE}/g" /tmp/wp-config.txt
+sed -i "s/@DB_PREFIX/${DB_PREFIX}/g" /tmp/wp-config.txt
 
-## new ##
-## replace placeholders with variables ##
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then sed -i "s/@DBNAME/${dbname}/g" /tmp/wp-config.txt
-else sed -i "s/@DBNAME/${DB_NAME}/g" /tmp/wp-config.txt
-fi
-
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then sed -i "s/@DBUSER/${dbuser}/g" /tmp/wp-config.txt
-else sed -i "s/@DBUSER/${DB_USER}/g" /tmp/wp-config.txt
-fi
-
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then sed -i "s/@DBPASSWORD/${dbuserpass}/g" /tmp/wp-config.txt
-else sed -i "s/@DBPASSWORD/${DB_PASSWORD}/g" /tmp/wp-config.txt
-fi
-
-if [[ -z "$DB_PASSWORD_ROOT" ]];
-then sed -i "s/@TABLEPREFIX/${dbprefix}/g" /tmp/wp-config.txt
-else sed -i "s/@TABLEPREFIX/${DB_PREFIX}/g" /tmp/wp-config.txt
-fi
-
-## replace placeholders with variables ##
+## replace domain placeholders ##
 sed -i "s/@DOMAIN/${SITE_DOMAIN}/g" /tmp/wp-config.txt
 sed -i "s/@TLD/${SITE_TLD}/g" /tmp/wp-config.txt
 
@@ -628,8 +612,8 @@ sed -i "s/@TLD/${SITE_TLD}/g" /tmp/wp-config.txt
 ####################################################################################################
 
 ## replace SFTP Details placeholders ##
-sed -i "s/@SFTP_USER/${SFTP_USER}/g" /var/www/html/wp-config.php
-sed -i "s/@SFTP_PASSWORD/${SFTP_PASSWORD}/g" /var/www/html/wp-config.php
+sed -i "s/@SFTP_USER/${SFTP_USER}/g" /tmp/wp-config.txt
+sed -i "s/@SFTP_PASSWORD/${SFTP_PASSWORD}/g" /tmp/wp-config.txt
 
 ## replace CloudFlare placeholders ##
 sed -i "s/@CLOUDFLARE_API_KEY/${CLOUDFLARE_API_KEY}/g" /tmp/wp-config.txt
@@ -654,15 +638,17 @@ sed -i "s/@NONCESALT/$(openssl rand -hex 48)/g" /tmp/wp-config.txt
 ####################################################################################################
 
 ## Replace Placeholders: Debug ##
-if [[ "$SLICKSTACK_TYPE" == "production" ]];
-    then sed -i "s/@DEBUGON/false/g" /tmp/wp-config.txt
-    else sed -i "s/@DEBUGON/true/g" /tmp/wp-config.txt
+if [[ "$SLICKSTACK_TYPE" == "production" ]]; then 
+    sed -i "s/@DEBUGON/false/g" /tmp/wp-config.txt
+else 
+    sed -i "s/@DEBUGON/true/g" /tmp/wp-config.txt
 fi
 
 ## Replace Placeholders: Debug ##
-if [[ "$SLICKSTACK_TYPE" == "production" ]];
-    then sed -i "s/@DEBUGDISPLAY/false/g" /tmp/wp-config.txt
-    else sed -i "s/@DEBUGDISPLAY/true/g" /tmp/wp-config.txt
+if [[ "$SLICKSTACK_TYPE" == "production" ]]; then 
+    sed -i "s/@DEBUGDISPLAY/false/g" /tmp/wp-config.txt
+else 
+    sed -i "s/@DEBUGDISPLAY/true/g" /tmp/wp-config.txt
 fi
 
 ## rename files ##
@@ -800,6 +786,9 @@ sed -i '/MaxAttempts/c\MaxAttempts 3' /etc/clamav/freshclam.conf
 #### Finish SlickStack Installation ################################################################
 ####################################################################################################
 
+## not a virgin install anymore ##
+mkdir -p /var/www/meta/ && touch /var/www/meta/.cherry
+
 ## run scripts ##
 source /var/www/ss-clean
 source /var/www/ss-perms
@@ -813,3 +802,21 @@ source /var/www/ss-perms
 
 ## confirm installation complete ##
 echo -e "\e[36mSlickStack installation complete! Please reboot server and ensure CloudFlare is activated.\e[0m"
+
+####################################################################################################
+#### External References Used By SlickStack To Improve This Script #################################
+####################################################################################################
+
+## Ref: http://wproller.com ##
+## Ref: https://github.com/bjornjohansen/deploy-wp-on-vps/blob/master/deploy.sh ##
+## Ref: https://github.com/sm0k3net/Useful-Scripts/blob/master/wordpress.sh ##
+## Ref: https://github.com/techandme/wordpress-vm ##
+## Ref: https://github.com/QROkes/webinoly ##
+## Ref: https://github.com/WordOps/WordOps ##
+## Ref: https://www.isicca.com/en/lemp-howto-install-nginx-php7-mariadb/ ##
+## Ref: https://gist.github.com/FeChagas/54b0cdf354b197dc8e417357d7687e8b ##
+## Ref: https://github.com/GeekPress/WP-Quick-Install ##
+## Ref: https://github.com/bajpangosh/High-Traffic-wordpress-server-configuration ##
+## Ref: https://gist.github.com/nickfox-taterli/2c283d73ba817392fb0f9f15d9cfa514 ##
+## Ref: https://gist.github.com/beardedinbinary/79d7ad34f9980f0a4c23 ##
+## Ref: https://www.linuxbabe.com/security/letsencrypt-webroot-tls-certificate

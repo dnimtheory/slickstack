@@ -13,13 +13,13 @@
 
 ## !!! DO NOT MODIFY THIS FILE. ADD TEMPORARY BASH SCRIPTS TO SS-WORKER INSTEAD. ##
 
-## scripts to run (include ss-encrypt + ss-update here) ##
-# source /var/www/ss-encrypt
+## include SlickStack configuration ##
+source /var/www/ss-config
 
-# if [[ "$SLICKSTACK_UPDATES" == "true" ]];
-#    then source /var/www/ss-update
-#   else exit 1
-# fi
+## scripts to run (include ss-update if statement here) ##
+if [[ "$SLICKSTACK_UPDATES" == "true" ]]; then 
+    source /var/www/ss-update
+fi
 
 ## delete lock files ##
 rm -R -f /tmp/8-cron-monthly*.lock*

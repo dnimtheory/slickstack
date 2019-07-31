@@ -1,10 +1,20 @@
-# SlickStack [ss] - "Alpha ss6c"
+# SlickStack [ss] - "Alpha ss6e"
 
 SlickStack is a free LEMP stack automation script written in Bash designed to enhance and simplify WordPress provisioning, performance, and security.
 
 | Google PageSpeed | GTMetrix | Pingdom | Security Headers | Qualys SSL Labs |
 | :--------------: | :------: | :-----: | :--------------: | :-------------: |
-| [**100%**](https://developers.google.com/speed/pagespeed/insights/?url=https%3A%2F%2Fslickstack.io%2F) | [**100%**](https://gtmetrix.com/reports/slickstack.io/zpLMZ1eb) | [**A**](https://tools.pingdom.com/#5aeba9dea8000000) | [**A**](https://securityheaders.com/?q=https%3A%2F%2Fslickstack.io%2F&followRedirects=on) | [**A**](https://www.ssllabs.com/ssltest/analyze.html?d=slickstack.io&latest) |
+| [**A**](https://developers.google.com/speed/pagespeed/insights/?url=https%3A%2F%2Fslickstack.io%2F) | [**A**](https://gtmetrix.com/reports/slickstack.io/zpLMZ1eb) | [**A**](https://tools.pingdom.com/#5aeba9dea8000000) | [**A**](https://securityheaders.com/?q=https%3A%2F%2Fslickstack.io%2F&followRedirects=on) | [**A**](https://www.ssllabs.com/ssltest/analyze.html?d=slickstack.io&latest) |
+
+* **NEW!** SlickStack now supports "disabling" our MU plugins via `ss-config` ... remember that currently, this means no CloudFlare, Clear Caches, and other valuable plugins, so be sure to setup your own if needed...
+
+* **NEW!** SlickStack now supports remote databases and better `DB_` customization...
+
+* **NEW!** SlickStack now supports ClassicPress (experimental drop-in alternative to WordPress)...
+
+* **NEW!** SlickStack now supports loading FastCGI Cache as `tmpfs` (optional)...
+
+* **NEW!** SlickStack better `ss-config` formatting (variables) now live...
 
 * **NEW!** SlickStack now supports custom `wp-config.php` boilerplates using `WP_CONFIG_SOURCE` variable... make sure that your boilerplate is using variables supported in the latest `ss-config` and `ss-install` builds...
 
@@ -13,8 +23,6 @@ SlickStack is a free LEMP stack automation script written in Bash designed to en
 * **NEW!** SlickStack now supports custom plugin blacklists using `PLUGIN_BLACKLIST_SOURCE` variable...
 
 * **NEW!** SlickStack now does `include_once` within wp-config.php on the Custom Functions (MU plugin) file `/var/www/html/wp-content/functions.php` meaning much more reliable PHP functions...
-
-* Browse the SlickStack public mirrors: http://mirrors.slickstack.io
 
 ## Abstract
 
@@ -32,27 +40,28 @@ It should also be noted that SlickStack [ss] is HTTPS-only, meaning that HTTP si
 
 ## Core Modules
 
-*Last updated: Jul 7, 2019*
+*Last updated: Jul 22, 2019*
 
 | LEMP Module | Mirrors | Version | What does SlickStack [ss] customize? |
 | :------------- | :----------: | :----------: | :----------: |
-| **Ubuntu** | [click here](http://mirrors.slickstack.io/ubuntu/) | 18.04 (LTS) | `crontab` + `gai.conf` + `sshd_config` + `sudoers` + `sysctl.conf` |
-| **Nginx (Extras)** | [click here](http://mirrors.slickstack.io/nginx/) | 1.15.8 | `nginx.conf` + `default` (server block) |
-| **FastCGI Cache** | (Nginx) | 1.15.8 | `fastcgi-cache.conf` |
-| **OpenSSL** | (Nginx) | 1.1.0g | default config |
-| **MySQL** | [click here](http://mirrors.slickstack.io/mysql/) | 5.7.25 | default config (will be customized slightly in future) |
-| **PHP-FPM** | [click here](http://mirrors.slickstack.io/php-fpm/) | 7.2.17 | `php.ini` + `php-fpm.conf` + `www.conf` |
-| **Zend / OPcache** | (PHP-FPM) | 3.2.0 / 7.2.17 | (same as PHP-FPM) |
-| **WordPress** | [click here](http://mirrors.slickstack.io/wordpress/) | 5.2.2 | some WP Core junk files are removed by `ss-clean` |
-| **ClassicPress†** | [click here](http://mirrors.slickstack.io/classicpress/) | 1.0.1 | some CP Core junk files are removed by `ss-clean` |
-| **MU Plugins** | [click here](http://mirrors.slickstack.io/mu-plugins/) | N/A | several `mu-plugins` by LittleBizzy |
-| **WP-CLI** | [click here](http://mirrors.slickstack.io/wp-cli/) | 2.2.0 | default config |
-| **Redis (Object Cache)** | [click here](http://mirrors.slickstack.io/redis/) | 4.0.9 | `redis.conf` + `object-cache.php` |
-| **Git** | [click here](http://mirrors.slickstack.io/git/) | 2.17.1 | default config |
-| **UFW Firewall** | (Ubuntu) | 0.36 | `ufw` + `ufw.conf` + `user-rules` |
-| **ClamAV** | [click here](http://mirrors.slickstack.io/clamav/) | 0.100.x | `freshclam.conf` |
+| **Ubuntu** | [mirrors](http://mirrors.slickstack.io/ubuntu/) | 18.04 (LTS) | `crontab` + `gai.conf` + `sshd_config` + `sudoers` + `sysctl.conf` |
+| **Nginx (Extras)** | [mirrors](http://mirrors.slickstack.io/nginx/) | 1.15.8 | `nginx.conf` + `default` (server block) |
+| **FastCGI Cache** | [mirrors](http://mirrors.slickstack.io/fastcgi-cache/) | 1.15.8 | `fastcgi-cache.conf` |
+| **OpenSSL** | [mirrors](http://mirrors.slickstack.io/openssl/) | 1.1.0g | default config |
+| **Let's Encrypt†** | [mirrors](http://mirrors.slickstack.io/letsencrypt/) | 0.23.0 | custom config |
+| **MySQL** | [mirrors](http://mirrors.slickstack.io/mysql/) | 5.7.25 | default config (will be customized slightly in future) |
+| **PHP-FPM** | [mirrors](http://mirrors.slickstack.io/php-fpm/) | 7.2.17 | `php.ini` + `php-fpm.conf` + `www.conf` |
+| **Zend / OPcache** | [mirrors](http://mirrors.slickstack.io/opcache/) | 3.2.0 / 7.2.17 | (same as PHP-FPM) |
+| **WordPress** | [mirrors](http://mirrors.slickstack.io/wordpress/) | 5.2.2 | some WP Core junk files are removed by `ss-clean` |
+| **ClassicPress** | [mirrors](http://mirrors.slickstack.io/classicpress/) | 1.0.1 | some CP Core junk files are removed by `ss-clean` |
+| **MU Plugins** | [mirrors](http://mirrors.slickstack.io/mu-plugins/) | N/A | several `mu-plugins` by LittleBizzy |
+| **WP-CLI** | [mirrors](http://mirrors.slickstack.io/wp-cli/) | 2.2.0 | default config |
+| **Redis (Obj Cache)** | [mirrors](http://mirrors.slickstack.io/redis/) | 4.0.9 | `redis.conf` + `object-cache.php` |
+| **Git** | [mirrors](http://mirrors.slickstack.io/git/) | 2.17.1 | default config |
+| **UFW Firewall** | [mirrors](http://mirrors.slickstack.io/ufw-firewall/) | 0.36 | `ufw` + `ufw.conf` + `user-rules` |
+| **ClamAV** | [mirrors](http://mirrors.slickstack.io/clamav/) | 0.100.x | `freshclam.conf` |
 
-†Not yet supported (ClassicPress = drop-in replacement for WordPress)
+†Not yet supported (pending)
 
 Default Ports: 80 (HTTP), 443 (HTTPS), 6969 (SSH)
 
@@ -93,11 +102,13 @@ After completing the installation steps above, your `/var/www/` directory should
     /var/www/cache/
     /var/www/html/
     /var/www/logs/
+    /var/www/meta/
     /var/www/ss-check
     /var/www/ss-clean
     /var/www/ss-config
     /var/www/ss-config-sample
     /var/www/ss-dump
+    /var/www/ss-encrypt
     /var/www/ss-install
     /var/www/ss-muplugs
     /var/www/ss-perms
@@ -486,4 +497,3 @@ For stability reasons, we don't use any tpmfs (memory-based storage) for caching
 ## Keywords
 
 slickstack, slick stack, nginx auto installer, optimize lemp stack, best wordpress stack, lemp install script, trellis wordpress, easy engine, lemp auto installer, nginx install script, stackscript
-
