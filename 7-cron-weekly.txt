@@ -6,15 +6,38 @@
 #### mirror: http://mirrors.slickstack.io/7-cron-weekly.txt ########################################
 #### path: /var/www/7-cron-weekly ##################################################################
 #### destination: n/a (not a boilerplate) ##########################################################
-#### purpose: SlickStack cron jobs "weekly" (7/9) ##################################################
-#### ss version: SlickStack alpha ss6a #############################################################
-#### module version: n/a ###########################################################################
+#### purpose: SlickStack cron job *weekly* (7/9) will run every 1 week #############################
+#### module version: Ubuntu 18.04 ##################################################################
 ####################################################################################################
 
-## !!! DO NOT MODIFY THIS FILE. ADD TEMPORARY BASH SCRIPTS TO SS-WORKER INSTEAD. ##
+## !!! DO NOT MODIFY THE CRONS OR CRONTAB... ADD CUSTOM SCRIPTS TO SS-CUSTOM INSTEAD. ##
 
-## scripts to run (include ss-encrypt here) ##
-# source /var/www/ss-encrypt
+## include SlickStack configuration ##
+source /var/www/ss-config
+
+####################################################################################################
+#### SlickStack Cron Job: *Weekly* #################################################################
+####################################################################################################
+
+## run ss-clean if set to weekly ##
+if [[ "$SS_INTERVAL_CLEAN" == "weekly" ]]; then 
+    source /var/www/ss-clean
+fi
+
+## run ss-muplugs if set to weekly ##
+if [[ "$SS_INTERVAL_MUPLUGS" == "weekly" ]]; then 
+    source /var/www/ss-muplugs
+fi
+
+## run ss-scan if set to weekly or if not defined (default) ##
+if [[ "$SS_INTERVAL_SCAN" == "weekly" || -z "$SS_INTERVAL_SCAN" ]]; then 
+    source /var/www/ss-scan
+fi
+
+## run ss-encrypt if not defined ##
+if [[ "$SS_INTERVAL_ENCRYPT" == "weekly" ]]; then 
+    source /var/www/ss-encrypt
+fi
 
 ## delete lock files ##
 rm -R -f /tmp/7-cron-weekly*.lock*

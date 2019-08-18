@@ -7,64 +7,74 @@
 #### path: /var/www/ss-perms #######################################################################
 #### destination: n/a (not a boilerplate) ##########################################################
 #### purpose: resets all file and user permissions across entire SlickStack server #################
-#### ss version: SlickStack alpha ss6c #############################################################
 #### module version: n/a ###########################################################################
 ####################################################################################################
-
-## Ref: https://unix.stackexchange.com/a/203372/353848 ##
 
 ## include SlickStack configuration ##
 source /var/www/ss-config
 
 ####################################################################################################
-#### Reset Permissions: Ubuntu Users, Groups, Etc ##################################################
+#### Reset Permissions: Ubuntu System Files + Users + Groups #######################################
 ####################################################################################################
-
-## create wordpress group if does not exist ##
-addgroup wordpress &> /dev/null
-
-## add SFTP (non-sudo) user and Nginx server user to the wordpress group ##
-if [[ -z "$SFTP_USER" ]]; then 
-    adduser $user wordpress &> /dev/null
-else 
-    adduser $SFTP_USER wordpress &> /dev/null
-fi
-
-
-
-adduser www-data wordpress &> /dev/null
 
 ## reset Ubuntu system files permissions ##
 chown root:root /etc/ssh/sshd_config
 chown root:root /etc/sudoers
 chmod 440 /etc/sudoers
 
-####################################################################################################
-#### Reset Permissions: SlickStack Core Files (Cron Jobs + Scripts) ################################
-####################################################################################################
-
-chown root:root /var/www
-chown root:root /var/www/*cron*
-chown root:root /var/www/ss*
-chmod 755 /var/www
-chmod 700 /var/www/*cron*
-chmod 700 /var/www/ss*
+## create wordpress group if does not exist ##
+addgroup wordpress &> /dev/null
+adduser $user wordpress &> /dev/null
+adduser $SFTP_USER wordpress &> /dev/null
+adduser $SFTP_USER www-data &> /dev/null
+adduser www-data wordpress &> /dev/null
 
 ####################################################################################################
-#### Reset Permissions: WordPress Files (WP Core + SlickStack) #####################################
+#### Reset Permissions: SlickStack Core Files ######################################################
 ####################################################################################################
 
-## create directories if do not exist already ##
+## ensure directories exist (will not overwrite if exist already) ##
+mkdir -p /var/www
+mkdir -p /var/www/cache
+mkdir -p /var/www/logs
+mkdir -p /var/www/meta
+
+## reset permissions for the chroot (SFTP) user's jailed directory ##
+chown root:root /var ## must be root:root
+chown root:root /var/www ## must be root:root
+chmod 0755 /var/www ## must be 0755
+
+## its okay if the SFTP user accesses this stuff but www-data:www-data is the priority ##
+chown www-data:www-data /var/www/cache
+chown www-data:www-data /var/www/logs
+chown www-data:www-data /var/www/meta
+chmod 6775 /var/www/cache ## 6755 also should work
+chmod 6775 /var/www/logs ## 6755 also should work
+chmod 6775 /var/www/meta ## 6755 also should work
+
+## reset file permissions for scripts used by root/user users ##
+chown root:root /var/www/*cron* ## must be root:root
+chown root:root /var/www/ss* ## must be root:root
+chown www-data:www-data /var/www/wp.sql ## root:root should also work
+chmod 6770 /var/www/*cron* ## 4700 should also work
+chmod 6770 /var/www/ss* ## 4700 should also work
+chmod 0700 /var/www/ss-config
+chmod 6770 /var/www/wp.sql
+
+####################################################################################################
+#### Reset Permissions: Public HTML Directory (WordPress) ##########################################
+####################################################################################################
+
+## ensure directories exist (will not overwrite if exist already) ##
+mkdir -p /var/www/html
+mkdir -p /var/www/html/wp-admin
+mkdir -p /var/www/html/wp-content
+mkdir -p /var/www/html/wp-content/languages
+mkdir -p /var/www/html/wp-content/mu-plugins
 mkdir -p /var/www/html/wp-content/temp
 mkdir -p /var/www/html/wp-content/uploads
 mkdir -p /var/www/html/wp-content/upgrade
-
-## chown ##
-if [[ -z "$SFTP_USER" ]]; then 
-    chown -R $user:wordpress /var/www/html
-else 
-    chown -R $SFTP_USER:wordpress /var/www/html
-fi
+mkdir -p /var/www/html/wp-includes
 
 ## ensure files exist ##
 if [ ! -f "/var/www/html/wp-content/blacklist.txt" ]; then 
@@ -75,144 +85,108 @@ if [ ! -f "/var/www/html/wp-content/functions.php" ]; then
     touch "/var/www/html/wp-content/functions.php"
 fi
 
-# chown -R www-data:www-data /var/www/html/wp-config.php
-chown -R www-data:wordpress /var/www/html/wp-content/temp
-chown -R www-data:wordpress /var/www/html/wp-content/mu-plugins
-chown -R www-data:wordpress /var/www/html/wp-content/uploads
-chown -R www-data:www-data /var/www/html/wp-content/blacklist.txt
-chown -R www-data:wordpress /var/www/html/wp-content/object-cache.php
-chown -R www-data:wordpress /var/www/html/wp-content/functions.php
+## reset folder permissions ##
+# sudo chown $SFTP_USER:wordpress -R /var/www/html* ## old
+# sudo chown $SFTP_USER:www-data -R /var/www/html* ## should use this one
 
-## chmod ##
-chmod 755 /var/www/html
-chmod -R g+s /var/www/html/
-chmod 660 /var/www/html/wp-config.php
-chmod 775 /var/www/html/wp-content/temp
-chmod 775 /var/www/html/wp-content/uploads
-chmod 400 /var/www/html/wp-content/blacklist.txt
-chmod 664 /var/www/html/wp-content/object-cache.php
-chmod 664 /var/www/html/wp-content/functions.php
+if [[ -z "$SFTP_USER" ]]; then 
+    chown -R $user:wordpress /var/www/html
+else 
+    chown -R $SFTP_USER:wordpress /var/www/html
+fi
 
-find /var/www/html/ -type d -exec chmod 775 {} \;
-find /var/www/html/ -type f -not -path "*var/www/html/wp-content/uploads*" -exec chmod 664 {} \;
-find /var/www/html/wp-content/uploads/ -not -name "*.jpg" -not -name "*.jpeg" -not -name "*.png" -not -name "*.bmp" -not -name "*.webp" -not -name "*.gif" -not -name "*.tiff" -not -name "*.mp4" -not -name "*.vid" -type f -exec chmod 664 {} \;
+# chown -R www-data:wordpress /var/www/html/wp-content/temp
+# chown -R www-data:wordpress /var/www/html/wp-content/mu-plugins
+# chown -R www-data:wordpress /var/www/html/wp-content/uploads
+chmod 6775 /var/www/html
+find /var/www/html/ -type d -exec chmod 6775 {} \;
+
+## reset file permissions ##
+# chown www-data:www-data /var/www/html/wp-content/blacklist.txt
+# chown www-data:www-data /var/www/html/wp-content/object-cache.php
+# chown www-data:www-data /var/www/html/wp-content/functions.php
+find /var/www/html/ -type f -not -path "*var/www/html/wp-content/uploads*" -exec chmod 6664 {} \;
+find /var/www/html/wp-content/uploads/ -not -name "*.jpg" -not -name "*.jpeg" -not -name "*.png" -not -name "*.bmp" -not -name "*.webp" -not -name "*.gif" -not -name "*.tiff" -not -name "*.mp4" -not -name "*.vid" -type f -exec chmod 0664 {} \;
+chmod 0660 /var/www/html/wp-config.php
+chmod 0440 /var/www/html/wp-content/blacklist.txt
+# chmod 6664 /var/www/html/wp-content/object-cache.php
+# chmod 6664 /var/www/html/wp-content/functions.php
 
 ####################################################################################################
-#### Reset Permissions: Log Files (Optimized For SlickStack) #######################################
+#### Reset Permissions: Various Log Files ##########################################################
 ####################################################################################################
 
-## create logs directory (will not overwrite if exists already) ##
-mkdir -p /var/www/logs
-
-## ensure all log files exist ##
+## ensure files exist ##
 if [ ! -f "/var/www/logs/clamav.log" ]; then touch "/var/www/logs/clamav.log"; fi
 if [ ! -f "/var/www/logs/error.log" ]; then touch "/var/www/logs/error.log"; fi
 if [ ! -f "/var/www/logs/mysql.log" ]; then touch "/var/www/logs/mysql.log"; fi
 if [ ! -f "/var/www/logs/nginx.log" ]; then touch "/var/www/logs/nginx.log"; fi
 if [ ! -f "/var/www/logs/redis.log" ]; then touch "/var/www/logs/redis.log"; fi
 
-## reset permissions ##
-chown -R www-data:www-data /var/www/logs
-chown -R clamav:clamav /var/www/logs/clamav.log*
-# chown -R www-data:www-data /var/www/logs/error.log*
-# chown -R mysql:mysql /var/www/logs/mysql.log*
-# chown -R www-data:www-data /var/www/logs/nginx.log*
-chown -R redis:redis /var/www/logs/redis.log*
-chmod -R 775 /var/www/logs
+chown clamav:clamav /var/www/logs/clamav*.log*
+chown www-data:www-data /var/www/logs/error*.log*
+chown mysql:mysql /var/www/logs/mysql*.log*
+chown www-data:www-data /var/www/logs/nginx*.log*
+chown redis:redis /var/www/logs/redis*.log*
 
 ####################################################################################################
-## Reset Permissions: Nginx Files ##################################################################
+#### Reset Permissions: Various SlickStack (LEMP) Modules ##########################################
 ####################################################################################################
+
+mkdir -p /var/run/mysqld
+mkdir -p /var/run/php
+mkdir -p /var/run/redis
 
 chown root:root /etc/nginx/nginx.conf
 chown root:root /etc/nginx/fastcgi.conf
-
-####################################################################################################
-## Reset Permissions: FastCGI Cache (Nginx) Files ##################################################
-####################################################################################################
-
-## create cache directory (will not overwrite if exists already) ##
-mkdir -p /var/www/cache
-
-## reset permissions ##
-chown www-data:www-data /var/www/cache
-chmod 775 /var/www/cache
-
-####################################################################################################
-## Reset Permissions: SlickStack Meta Files ########################################################
-####################################################################################################
-
-## create meta directory (will not overwrite if exists already) ##
-mkdir -p /var/www/meta
-
-## reset permissions ##
-chown www-data:www-data /var/www/meta
-chmod 775 /var/www/meta
-
-####################################################################################################
-## Reset Permissions: OpenSSL (Nginx) Files ########################################################
-####################################################################################################
-
-if [[ -f "/etc/ssl/nginx.crt" ]]; then 
-    chown root:root /etc/ssl/nginx.crt
-    chmod -R 700 /etc/ssl/nginx.crt
-fi
-
-if [[ -f "/etc/ssl/nginx.key" ]]; then 
-    chown root:root /etc/ssl/nginx.key
-    chmod -R 700 /etc/ssl/nginx.key
-fi
-
-if [[ -f "/etc/ssl/nginx.pem" ]]; then 
-    chown root:root /etc/ssl/nginx.pem
-    chmod -R 700 /etc/ssl/nginx.pem
-fi
-
-####################################################################################################
-## Reset Permissions: PHP-FPM Files ################################################################
-####################################################################################################
-
-## old ##
-mkdir -p /var/run/php
-
-## reset php permissions ##
-# chown www-data:www-data /var/run/php
-chown root:root /etc/php/7.2/fpm/php.ini
-chown root:root /etc/php/7.2/fpm/php-fpm.conf
-chown root:root /etc/php/7.2/cli/php.ini
-
-## create mysql files if do not exist ##
-mkdir -p /var/run/mysqld
-
-####################################################################################################
-## Reset Permissions: MySQL Files ##################################################################
-####################################################################################################
-
-## reset MySQL permissions ##
+chown root:root /etc/ssl/nginx.crt
+chmod -R 700 /etc/ssl/nginx.crt
+chown root:root /etc/ssl/nginx.key
+chmod -R 700 /etc/ssl/nginx.key
+chown root:root /etc/ssl/nginx.pem
+chmod -R 700 /etc/ssl/nginx.pem
 chown mysql:mysql /var/run/mysqld
 chown root:root /etc/mysql/my.cnf
 chown root:root /etc/mysql/mysql.cnf
 chown root:root /etc/mysql/mysql.conf.d/mysqld.cnf
 
-####################################################################################################
-## Reset Permissions: Redis Files ##################################################################
-####################################################################################################
+## always run WP-CLI as the www-data user (and allow SFTP user to run it) ##
+chown root:root /usr/local/bin/
+chown www-data:www-data /usr/local/bin/wp
+chmod 6775 /usr/local/bin/wp
 
-## create Redis directory (will not overwrite if exists already) ##
-mkdir -p /var/run/redis
+# chown www-data:www-data /var/run/php
+chown root:root /etc/php/7.2/fpm/php.ini
+chown root:root /etc/php/7.2/fpm/php-fpm.conf
+chown root:root /etc/php/7.2/cli/php.ini
 
-## reset permissions ##
 chown redis:redis /var/run/redis
 chown redis:redis /etc/redis/redis.conf
 
 ####################################################################################################
-## Reset Permissions: WP-CLI Files #################################################################
+#### Convert DOS Files To Unix Files (Requires Dos2Unix To Be Installed) ###########################
 ####################################################################################################
 
-## reset WP-CLI permissions ##
-## https://github.com/wp-cli/wp-cli/issues/3181 ##
-## https://github.com/wp-cli/wp-cli/issues/1241 ##
-## https://www.alexgeorgiou.gr/wp-cli-www-data-user-permissions-linux/ ##
-chown root:root /usr/local/bin/
-chown www-data:www-data /usr/local/bin/wp
-chmod 6775 /usr/local/bin/wp
+if [[ "$SS_DOS2UNIX" == "true" ]]; then 
+    find /var/www/html/ -type f -exec dos2unix -k -o -s {} \;
+fi
+
+####################################################################################################
+#### External References Used By SlickStack To Improve This Script #################################
+####################################################################################################
+
+## Ref: https://unix.stackexchange.com/a/203372/353848
+## Ref: https://stackoverflow.com/a/19284034/1718491
+## Ref: https://stackoverflow.com/a/11929475/1718491
+## Ref: https://unix.stackexchange.com/a/310437/353848
+## Ref: https://kb.iu.edu/d/acux
+## Ref: https://stackoverflow.com/q/2613800/1718491
+## Ref: https://github.com/wp-cli/wp-cli/issues/3181
+## Ref: https://github.com/wp-cli/wp-cli/issues/1241
+## Ref: https://www.alexgeorgiou.gr/wp-cli-www-data-user-permissions-linux/
+## Ref: https://www.darklaunch.com/php-normalize-newlines-line-endings-crlf-cr-lf-unix-windows-mac
+## Ref: https://serverfault.com/questions/344544/what-is-the-first-digit-for-in-4-digit-octal-unix-file-permission-notation
+## Ref: https://unix.stackexchange.com/questions/79395/how-does-the-sticky-bit-work
+## Ref: https://superuser.com/questions/684213/why-are-execute-permissions-along-with-write-permissions-needed-for-creating-a-f
+## Ref: https://ubuntuforums.org/showthread.php?t=2383638
+## Ref: https://serverfault.com/questions/584986/bad-ownership-or-modes-for-chroot-directory-component

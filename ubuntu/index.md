@@ -8,8 +8,9 @@ title: Ubuntu (Public Mirrors)
 
 ### Custom Files
 
-*Live configuration files and boilerplates used by current SlickStack installation that may be altered by LittleBizzy or Ubuntu for better performance.*
+*Live configuration files and boilerplates used by current SlickStack installation that may be modified by LittleBizzy or Ubuntu for better performance.*
 
+* <a href="bash-aliases.txt">bash-aliases.txt</a>
 * <a href="gai-conf.txt">gai-conf.txt</a>
 * <a href="sshd-config.txt">sshd-config.txt</a>
 * <a href="sudoers.txt">sudoers.txt</a>
@@ -23,12 +24,12 @@ title: Ubuntu (Public Mirrors)
 *Raw files from the vendor’s original release (e.g. official repo), not altered by other providers, included for reference and documentation purposes.*
 
 * <a href="gai-conf-18.04.txt">gai-conf-18.04.txt</a>
-* <a href="ufw-18.04.txt">ufw-18.04.txt</a>
-* <a href="ufw-conf-18.04.txt">ufw-conf-18.04.txt</a>
-* <a href="user-rules-18.04.txt">user-rules-18.04.txt</a>
 * <a href="gai-conf-16.04.txt">gai-conf-16.04.txt</a>
+* <a href="ufw-18.04.txt">ufw-18.04.txt</a>
 * <a href="ufw-16.04.txt">ufw-16.04.txt</a>
+* <a href="ufw-conf-18.04.txt">ufw-conf-18.04.txt</a>
 * <a href="ufw-conf-16.04.txt">ufw-conf-16.04.txt</a>
+* <a href="user-rules-18.04.txt">user-rules-18.04.txt</a>
 * <a href="user-rules-16.04.txt">user-rules-16.04.txt</a>
 
 ### Related Links
@@ -38,6 +39,8 @@ title: Ubuntu (Public Mirrors)
 * <a href="http://manpages.ubuntu.com/manpages/bionic/man5/gai.conf.5.html">http://manpages.ubuntu.com/manpages/bionic/man5/gai.conf.5.html</a>
 * <a href="https://wiki.ubuntu.com/UncomplicatedFirewall">https://wiki.ubuntu.com/UncomplicatedFirewall</a>
 
+
+
 ----
 
-*Last updated: Jun 25, 2019*
+*Last updated: Aug 7, 2019*

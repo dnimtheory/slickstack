@@ -6,12 +6,11 @@
 #### mirror: http://mirrors.slickstack.io/ss-install.txt ###########################################
 #### path: /var/www/ss-install #####################################################################
 #### destination: n/a (not a boilerplate) ##########################################################
-#### purpose: installs all SlickStack server LEMP modules, etc (idempotent) ########################
-#### ss version: SlickStack alpha ss6e #############################################################
+#### purpose: reinstalls the SlickStack server and all LEMP modules, etc (idempotent) ##############
 #### module version: n/a ###########################################################################
 ####################################################################################################
 
-## SS-CONFIG MUST BE CONFIGURED BEFORE RUNNING THIS INSTALL SCRIPT ##
+## THE SS-CONFIG FILE MUST BE CONFIGURED BEFORE RUNNING THE SS-INSTALL SCRIPT ##
 
 ## include SlickStack configuration ##
 source /var/www/ss-config
@@ -25,7 +24,7 @@ source /var/www/ss-config
 # fi
 
 ## verify ss-config build matches ss-install build ##
-if [[ "$SLICKSTACK_BUILD" != "JUL2019W" ]]; then 
+if [[ "$SS_BUILD" != "AUG2019E" ]]; then 
     echo -e "\e[93mYour ss-config file is outdated. Please rebuild it and run ss-install again.\e[0m" >&2
     exit 1
 fi
@@ -76,7 +75,7 @@ DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/u
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install update-manager-core
 
 ## install Linux utilities ##
-DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install zip unzip
+DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install zip unzip dos2unix
 
 ## install Git ##
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install git
@@ -161,6 +160,13 @@ wget --no-cache --no-cookies -O /tmp/sshd-config.txt http://mirrors.slickstack.i
 ## replace variables ##
 sed -i "s/@SUDO/${SUDO_USER}/g" /tmp/sshd-config.txt
 sed -i "s/@USER/${SFTP_USER}/g" /tmp/sshd-config.txt
+
+## set port number ##
+if [[ -z "$SSH_PORT" ]]; then 
+    sed -i "s/@SSH_PORT/6969/g" /tmp/sshd-config.txt
+else 
+    sed -i "s/@SSH_PORT/${SSH_PORT}/g" /tmp/sshd-config.txt
+fi
 
 ## rename files ##
 mv /tmp/sshd-config.txt /tmp/sshd_config
@@ -272,7 +278,7 @@ chown root:root /etc/php/7.2/fpm/pool.d/www.conf
 /etc/init.d/php7.2-fpm restart
 
 ####################################################################################################
-### Install WP-CLI #################################################################################
+### Prepare WP-CLI Configuration (Installation Completed Via Bash Aliases) #########################
 ####################################################################################################
 
 ## MESSAGE: explain repos ##
@@ -281,39 +287,72 @@ echo -e "\e[36mInstalling the WP-CLI module directly from SlickStack mirrors...\
 ## uninstall current wp-cli versions ##
 rm -R -f /usr/local/bin/wp
 rm -R -f /home/wp-completion.bash
+rm -R -f /home/${SUDO_USER}/wp-cli.yml
+rm -R -f /var/www/meta/.wp-completion*
+rm -R -f /var/www/meta/wp-cli.yml
 rm -R -f /var/www/html/.wp-cli
 rm -R -f /var/www/html/wp-cli
 sed -i '/WP-CLI/d' /home/${SUDO_USER}/.bashrc
 sed -i '/wp-completion/d' /home/${SUDO_USER}/.bashrc
 
+## symlinks for wp-cli.yml ##
+ln -s /home/${SUDO_USER}/.wp-cli/config.yml /var/www/meta/wp-cli.yml &> /dev/null
+ln -s /root/.wp-cli/config.yml /var/www/meta/wp-cli.yml &> /dev/null
+
 ## download latest versions ##
-wget --no-cache --no-cookies -O /tmp/wp-cli.phar http://mirrors.slickstack.io/wp-cli/wp-cli.phar
-wget --no-cache --no-cookies -O /tmp/wp-completion.txt http://mirrors.slickstack.io/wp-cli/wp-completion.txt
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/wp-cli.phar http://mirrors.slickstack.io/wp-cli/wp-cli.phar
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/wp-cli.yml http://mirrors.slickstack.io/wp-cli/wp-cli-yml.txt
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/wp-completion.txt http://mirrors.slickstack.io/wp-cli/wp-completion.txt
 
 ## make files executable ##
 chmod +x /tmp/wp-cli.phar
 
 ## copy files to destinations ##
-mv -f /tmp/wp-cli.phar /usr/local/bin/wp
-mv -f /tmp/wp-completion.txt /home/wp-completion.bash
+cp -R -f -d --no-preserve=mode,ownership /tmp/wp-cli.phar /usr/local/bin/wp
+cp -R -f -d --no-preserve=mode,ownership /tmp/wp-cli.yml /var/www/meta/wp-cli.yml
+cp -R -f -d --no-preserve=mode,ownership /tmp/wp-completion.txt /var/www/meta/.wp-completion
 
 ## reset permissions ##
-## https://www.alexgeorgiou.gr/wp-cli-www-data-user-permissions-linux/ ##
+## Ref: https://www.alexgeorgiou.gr/wp-cli-www-data-user-permissions-linux/
 chown root:root /usr/local/bin/
 chown www-data:www-data /usr/local/bin/wp
+chown www-data:www-data /var/www/meta/wp-cli.yml
+chown www-data:www-data /var/www/meta/.wp-completion
+chown root:root /home/${SUDO_USER}/.wp-cli/config.yml
+chown root:root /root/.wp-cli/config.yml
 chmod 6775 /usr/local/bin/wp
-chown www-data:www-data /home/wp-completion.bash
-chmod 6775 /home/wp-completion.bash
+chmod 6775 /var/www/meta/wp-cli.yml
+chmod 6775 /var/www/meta/.wp-completion
 
-## modify sudo user's .bashrc ##
-## e.g. echo 'source /home/wp-completion.bash' >> ~/.bashrc ##
-## https://stackoverflow.com/questions/49668542/create-a-script-that-adds-lines-of-code-to-bashrc-then-reloads-the-terminal ##
+####################################################################################################
+### Install Bash Aliases (Supports Basic SlickStack Commands) + Finalize WP-CLI ####################
+####################################################################################################
+
+## MESSAGE: explain repos ##
+echo -e "\e[36mInstalling Bash aliases for basic SlickStack commands...\e[0m"
+
+## uninstall old ##
+rm -R -f /home/${SUDO_USER}/.bash-aliases
+rm -R -f /var/www/meta/.bash-aliases
+sed -i '/include Bash aliases/d' /home/${SUDO_USER}/.bashrc
+sed -i '\:var/www/meta:d' /home/${SUDO_USER}/.bashrc
+
+## download ##
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/bash-aliases.txt http://mirrors.slickstack.io/ubuntu/bash-aliases.txt
+
+## copy files ##
+cp -R -f -d --no-preserve=mode,ownership /tmp/bash-aliases.txt /var/www/meta/.bash-aliases
+
+## reset permissions ##
+chown root:root /var/www/meta/.bash-aliases
+chmod 6775 /var/www/meta/.bash-aliases
+
+## modify .bashrc file ##
 echo '
-## source Bash completion file for WP-CLI ##
-source /home/wp-completion.bash' >> /home/${SUDO_USER}/.bashrc
+## include Bash aliases ##
+source /var/www/meta/.bash-aliases' >> /home/${SUDO_USER}/.bashrc
 
-## reload sudo .bashrc ##
-## e.g. source ~/.bashrc ##
+## reload .bashrc ##
 source /home/${SUDO_USER}/.bashrc
 
 ####################################################################################################
@@ -638,14 +677,14 @@ sed -i "s/@NONCESALT/$(openssl rand -hex 48)/g" /tmp/wp-config.txt
 ####################################################################################################
 
 ## Replace Placeholders: Debug ##
-if [[ "$SLICKSTACK_TYPE" == "production" ]]; then 
+if [[ "$SS_TYPE" == "production" ]]; then 
     sed -i "s/@DEBUGON/false/g" /tmp/wp-config.txt
 else 
     sed -i "s/@DEBUGON/true/g" /tmp/wp-config.txt
 fi
 
 ## Replace Placeholders: Debug ##
-if [[ "$SLICKSTACK_TYPE" == "production" ]]; then 
+if [[ "$SS_TYPE" == "production" ]]; then 
     sed -i "s/@DEBUGDISPLAY/false/g" /tmp/wp-config.txt
 else 
     sed -i "s/@DEBUGDISPLAY/true/g" /tmp/wp-config.txt
@@ -793,6 +832,9 @@ mkdir -p /var/www/meta/ && touch /var/www/meta/.cherry
 source /var/www/ss-clean
 source /var/www/ss-perms
 
+## reset error logs ##
+cat /dev/null > /var/www/logs/error.log
+
 ## restart services ##
 /etc/init.d/nginx restart
 /etc/init.d/php7.2-fpm restart
@@ -801,7 +843,7 @@ source /var/www/ss-perms
 /etc/init.d/ufw restart
 
 ## confirm installation complete ##
-echo -e "\e[36mSlickStack installation complete! Please reboot server and ensure CloudFlare is activated.\e[0m"
+echo -e "\e[36mSlickStack installation complete! Please reboot server and ensure CloudFlare is activated with Full SSL mode.\e[0m"
 
 ####################################################################################################
 #### External References Used By SlickStack To Improve This Script #################################
@@ -820,3 +862,4 @@ echo -e "\e[36mSlickStack installation complete! Please reboot server and ensure
 ## Ref: https://gist.github.com/nickfox-taterli/2c283d73ba817392fb0f9f15d9cfa514 ##
 ## Ref: https://gist.github.com/beardedinbinary/79d7ad34f9980f0a4c23 ##
 ## Ref: https://www.linuxbabe.com/security/letsencrypt-webroot-tls-certificate
+## Ref: https://stackoverflow.com/questions/49668542/create-a-script-that-adds-lines-of-code-to-bashrc-then-reloads-the-terminal

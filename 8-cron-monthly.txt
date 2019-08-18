@@ -6,18 +6,26 @@
 #### mirror: http://mirrors.slickstack.io/8-cron-monthly.txt #######################################
 #### path: /var/www/8-cron-monthly #################################################################
 #### destination: n/a (not a boilerplate) ##########################################################
-#### purpose: SlickStack cron jobs "monthly" (8/9) #################################################
-#### ss version: SlickStack alpha ss6a #############################################################
-#### module version: n/a ###########################################################################
+#### purpose: SlickStack cron job *monthly* (8/9) will run every 1 month ###########################
+#### module version: Ubuntu 18.04 ##################################################################
 ####################################################################################################
 
-## !!! DO NOT MODIFY THIS FILE. ADD TEMPORARY BASH SCRIPTS TO SS-WORKER INSTEAD. ##
+## !!! DO NOT MODIFY THE CRONS OR CRONTAB... ADD CUSTOM SCRIPTS TO SS-CUSTOM INSTEAD. ##
 
 ## include SlickStack configuration ##
 source /var/www/ss-config
 
-## scripts to run (include ss-update if statement here) ##
-if [[ "$SLICKSTACK_UPDATES" == "true" ]]; then 
+####################################################################################################
+#### SlickStack Cron Job: *Monthly* ################################################################
+####################################################################################################
+
+## run ss-encrypt if set to monthly or if not defined (default) ##
+if [[ "$SS_INTERVAL_ENCRYPT" == "monthly" || -z "$SS_INTERVAL_ENCRYPT" ]]; then 
+    source /var/www/ss-encrypt
+fi
+
+## run ss-update if set to monthly ##
+if [[ "$SS_INTERVAL_UPDATE" == "monthly" ]]; then 
     source /var/www/ss-update
 fi
 

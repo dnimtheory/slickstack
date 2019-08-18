@@ -1,4 +1,4 @@
-# SlickStack [ss] - "Alpha ss6e"
+# SlickStack [ss] - "Alpha ss7a"
 
 SlickStack is a free LEMP stack automation script written in Bash designed to enhance and simplify WordPress provisioning, performance, and security.
 
@@ -6,11 +6,15 @@ SlickStack is a free LEMP stack automation script written in Bash designed to en
 | :--------------: | :------: | :-----: | :--------------: | :-------------: |
 | [**A**](https://developers.google.com/speed/pagespeed/insights/?url=https%3A%2F%2Fslickstack.io%2F) | [**A**](https://gtmetrix.com/reports/slickstack.io/zpLMZ1eb) | [**A**](https://tools.pingdom.com/#5aeba9dea8000000) | [**A**](https://securityheaders.com/?q=https%3A%2F%2Fslickstack.io%2F&followRedirects=on) | [**A**](https://www.ssllabs.com/ssltest/analyze.html?d=slickstack.io&latest) |
 
+* **NEW!** all SlickStack intervals (scheduled cron jobs) can be customized using `SS_INTERVAL` variables...
+
+* **NEW!** SlickStack can now convert DOS files to Unix format via `SS_DOS2UNIX` variable in `ss-config` that will run automatically whenever the `ss-perms` script is called (end of the script)...
+
+* **NEW!** SlickStack now supports custom SSH (SFTP) port numbers using the `SSH_PORT` variable in `ss-config`...
+
 * **NEW!** SlickStack now supports "disabling" our MU plugins via `ss-config` ... remember that currently, this means no CloudFlare, Clear Caches, and other valuable plugins, so be sure to setup your own if needed...
 
 * **NEW!** SlickStack now supports remote databases and better `DB_` customization...
-
-* **NEW!** SlickStack now supports ClassicPress (experimental drop-in alternative to WordPress)...
 
 * **NEW!** SlickStack now supports loading FastCGI Cache as `tmpfs` (optional)...
 
@@ -40,7 +44,7 @@ It should also be noted that SlickStack [ss] is HTTPS-only, meaning that HTTP si
 
 ## Core Modules
 
-*Last updated: Jul 22, 2019*
+*Last updated: Aug 1, 2019*
 
 | LEMP Module | Mirrors | Version | What does SlickStack [ss] customize? |
 | :------------- | :----------: | :----------: | :----------: |
@@ -53,7 +57,6 @@ It should also be noted that SlickStack [ss] is HTTPS-only, meaning that HTTP si
 | **PHP-FPM** | [mirrors](http://mirrors.slickstack.io/php-fpm/) | 7.2.17 | `php.ini` + `php-fpm.conf` + `www.conf` |
 | **Zend / OPcache** | [mirrors](http://mirrors.slickstack.io/opcache/) | 3.2.0 / 7.2.17 | (same as PHP-FPM) |
 | **WordPress** | [mirrors](http://mirrors.slickstack.io/wordpress/) | 5.2.2 | some WP Core junk files are removed by `ss-clean` |
-| **ClassicPress** | [mirrors](http://mirrors.slickstack.io/classicpress/) | 1.0.1 | some CP Core junk files are removed by `ss-clean` |
 | **MU Plugins** | [mirrors](http://mirrors.slickstack.io/mu-plugins/) | N/A | several `mu-plugins` by LittleBizzy |
 | **WP-CLI** | [mirrors](http://mirrors.slickstack.io/wp-cli/) | 2.2.0 | default config |
 | **Redis (Obj Cache)** | [mirrors](http://mirrors.slickstack.io/redis/) | 4.0.9 | `redis.conf` + `object-cache.php` |

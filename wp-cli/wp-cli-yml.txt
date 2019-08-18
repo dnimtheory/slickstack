@@ -1,0 +1,47 @@
+####################################################################################################
+#### author: SlickStack ############################################################################
+#### link: https://slickstack.io ###################################################################
+#### mirror: http://mirrors.slickstack.io/wp-cli/wp-cli-yml.txt ####################################
+#### path: /var/www/meta/wp-cli.yml ################################################################
+#### destination: n/a (not a boilerplate) ##########################################################
+#### purpose: WP-CLI configuration file to limit commands that conflict with SlickStack ############
+#### module version: WP-CLI 2.2.0 ##################################################################
+####################################################################################################
+
+## IN GENERAL WE RECOMMEND USING SLICKSTACK SCRIPTS INSTEAD OF WP-CLI WHEN POSSIBLE ##
+## GLOBAL vARIABLES FOR WP-CLI ARE DEFINED IN /var/www/meta/.bash-aliases ##
+
+####################################################################################################
+#### WP-CLI Default Settings (Optimized For SlickStack) ############################################
+####################################################################################################
+
+path: /var/www/html
+disabled_commands:
+  - cli
+  - config
+  - core
+  - db cli
+  - db create
+  - db drop
+  - db prefix
+  - db reset
+  - embed
+  - eval
+  - eval-file
+  - network
+  - option
+  - package
+  - plugin install
+  - rewrite
+  - server
+  - shell
+  - site
+  - super-admin
+
+####################################################################################################
+#### External References Used By SlickStack To Improve This Script #################################
+####################################################################################################
+
+## Ref: https://blog.runcloud.io/2018/02/01/introducing-wp-cli.html
+## Ref: https://make.wordpress.org/cli/handbook/config/
+## Ref: https://wordpress-errors.info/wordpress-error-debug/

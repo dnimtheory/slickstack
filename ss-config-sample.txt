@@ -7,7 +7,6 @@
 #### path: /var/www/ss-config-sample (boilerplate remains here for reference only) #################
 #### destination: /var/www/ss-config (after install) ###############################################
 #### purpose: SlickStack configuration file boilerplate ############################################
-#### ss version: SlickStack alpha ss6e #############################################################
 #### module version: n/a ###########################################################################
 ####################################################################################################
 
@@ -17,25 +16,52 @@
 ## generate latest ss-config options: http://mirrors.slickstack.io/ss-config-sample.txt ##
 ## copy and paste entire boilerplate before modifying for best results ##
 
-SLICKSTACK_BUILD="JUL2019W"
+SS_BUILD="AUG2019E"
 
 ####################################################################################################
 #### SlickStack: General Settings ##################################################################
 ####################################################################################################
 
-## SLICKSTACK_APP = [wordpress|classicpress] experimental ClassicPress support ##
-## SLICKSTACK_MUPLUGINS = [true|false] installs MU plugins (recommended) ##
-## SLICKSTACK_TYPE = [production|staging] enables debug on non-production servers ##
-## SLICKSTACK_SSL = [openssl|certbot] Certbot SSL not yet supported (OpenSSL recommended) ##
-## SLICKSTACK_UPDATES = [false|true] autoruns ss-update 1x month (not recommended) ##
-## SLICKSTACK_REBOOT = [false|true] server reboots after ss-update runs ##
+## SS_APP = [wordpress] currently only WordPress is supported ##
+## SS_MUPLUGINS = [true|false] installs MU plugins (recommended) ##
+## SS_TYPE = [production|staging] enables debug on non-production servers ##
+## SS_SSL = [openssl|certbot] Certbot SSL not yet supported (OpenSSL recommended) ##
+## SS_REBOOT = [false|true] server reboots after ss-update runs ##
 
-SLICKSTACK_APP="wordpress"
-SLICKSTACK_MUPLUGINS="true"
-SLICKSTACK_TYPE="production"
+SS_APP="wordpress"
+SS_TYPE="production"
+SS_MUPLUGINS="true"
+SS_DOS2UNIX="true"
+SS_REBOOT="false"
+
 SLICKSTACK_SSL="openssl"
-SLICKSTACK_UPDATES="false"
-SLICKSTACK_REBOOT="false"
+# SS_TIMEZONE="UTC"
+
+####################################################################################################
+#### SlickStack: Interval Settings (Schedule Tasks) ################################################
+####################################################################################################
+
+## !!! ADVANCED USERS ONLY... MODIFYING THESE INTERVALS COULD AFFECT SERVER STABILITY ##
+
+## SS_INTERVAL_CHECK = [often|regular|hourly] ##
+## SS_INTERVAL_WORKER = [regular|hourly|quarter-daily] ##
+## SS_INTERVAL_DUMP = [often|regular|hourly|quarter-daily|half-daily|daily] ##
+## SS_INTERVAL_PERMS = [hourly|quarter-daily|half-daily|daily] ##
+## SS_INTERVAL_CLEAN = [hourly|quarter-daily|half-daily|daily|weekly] ##
+## SS_INTERVAL_MUPLUGS = [daily|weekly] ##
+## SS_INTERVAL_SCAN = [daily|weekly] ##
+## SS_INTERVAL_ENCRYPT = [weekly|monthly] ##
+## SS_INTERVAL_UPDATE = [monthly|sometimes] ##
+
+SS_INTERVAL_CHECK="often"
+SS_INTERVAL_WORKER="regular"
+SS_INTERVAL_DUMP="hourly"
+SS_INTERVAL_PERMS="quarter-daily"
+SS_INTERVAL_CLEAN="half-daily"
+SS_INTERVAL_MUPLUGS="daily"
+SS_INTERVAL_SCAN="weekly"
+SS_INTERVAL_ENCRYPT="never"
+SS_INTERVAL_UPDATE="never"
 
 ####################################################################################################
 #### Ubuntu: Root + Sudo User Settings (Unlimited SSH Access) ######################################
@@ -43,11 +69,11 @@ SLICKSTACK_REBOOT="false"
 
 ## WRITE DOWN YOUR SUDO USER PASSWORD OR YOU WILL BE LOCKED OUT OF YOUR SERVER FOREVER ##
 ## NEVER NAME YOUR SUDO USER SOMETHING LIKE 'ROOT' OR 'ADMIN' FOR SECURITY ##
-## SLICKSTACK SSH/SFTP PORT NUMBER ALWAYS = 6969 ##
 
 ROOT_PASSWORD="password"
 SUDO_USER="example"
 SUDO_PASSWORD="password"
+SSH_PORT="6969"
 
 ####################################################################################################
 #### Ubuntu: Jailed User Settings (SFTP Access Only = For Your Client, Etc) ########################
@@ -77,6 +103,12 @@ DB_CHARSET="utf8mb4"
 DB_COLLATE=""
 
 ####################################################################################################
+#### MySQL: Various Settings #######################################################################
+####################################################################################################
+
+# ALLOW_INVALID_DATES="true"
+
+####################################################################################################
 #### Nginx + WordPress: Domain Settings (Subdirectories Not Supported) #############################
 ####################################################################################################
 
@@ -93,21 +125,29 @@ SITE_DOMAIN="www.example.com"
 ## FASTCGI_CACHE = [true|false] recommended for nearly every website ##
 ## FASTCGI_CACHE_VALID = [60m|1440m|etc] longer is better (but dynamic sites need less) ##
 ## FASTCGI_CACHE_INACTIVE = [60m|1440m|etc] longer is better (but dynamic sites need less) ##
-## FASTCGI_CACHE_MEMORY = [256m|512m|1024m|etc] for 1GB|2GB|4GB RAM VPS etc ##
-## FASTCGI_CACHE_MAX_SIZE = [2048m|4096m|etc] allocate space on disk ##
-## FASTCGI_CACHE_TMPFS = [false|true] not recommended ##
+## FASTCGI_CACHE_MEMORY = [64m|128m|256m|512m|etc] for 512M|1GB|2GB|4GB RAM VPS ##
+## FASTCGI_CACHE_MAX_SIZE = [2048m|4096m|8192m|16384m|etc] allocate space on disk ##
+## FASTCGI_CACHE_TMPFS = [false|true] mount as TMPFS (not recommended) ##
 
 FASTCGI_CACHE="true"
 FASTCGI_CACHE_VALID="60m"
 FASTCGI_CACHE_INACTIVE="60m"
-FASTCGI_CACHE_MEMORY="512m"
+FASTCGI_CACHE_MEMORY="256m"
 FASTCGI_CACHE_MAX_SIZE="4096m"
 FASTCGI_CACHE_TMPFS="false"
 
 ####################################################################################################
-#### OpenSSL + Let's Encrypt: SSL Certificate Settings (Not Actually Required) #####################
+#### WordPress: Various Settings ###################################################################
 ####################################################################################################
 
+OBJECT_CACHE="true" ## not yet supported to disable
+WP_CONFIG_SOURCE="http://mirrors.slickstack.io/wordpress/wp-config.txt"
+
+####################################################################################################
+#### OpenSSL + Let's Encrypt: SSL Certificate Settings (Profile Not Required) ######################
+####################################################################################################
+
+# SSL_TYPE="openssl"
 SSL_COUNTRY="US"
 SSL_STATE="Nevada"
 SSL_CITY="Las Vegas"
@@ -116,39 +156,32 @@ SSL_DEPT="Marketing"
 SSL_EMAIL="user@example.com"
 
 ####################################################################################################
-#### CloudFlare (MU Plugin): API + Dashboard Widget Settings #######################################
+#### Must Use (MU) Plugins: Enable Or Disable + Custom Plugins #####################################
+####################################################################################################
+
+# MUPLUGS_CLOUDFLARE="true"
+# MUPLUGS_CLEAR_CACHES="true"
+# MUPLUGS_CUSTOM_FUNCTIONS="true"
+
+# MUPLUGS_CUSTOM_1_SOURCE="example.com/asdf.zip"
+# MUPLUGS_CUSTOM_1_DIR="asdf"
+# etc
+
+####################################################################################################
+#### CloudFlare (MU Plugin): Various Settings ######################################################
 ####################################################################################################
 
 CLOUDFLARE_API_KEY="123456789"
 CLOUDFLARE_API_EMAIL="user@example.com"
+CLOUDFLARE_RECOMMENDED_SETTINGS="true" ## not yet supported
 CLOUDFLARE_WIDGET_DNS="true"
-
-## CLOUDFLARE_RECOMMENDED_SETTINGS="true"
-## CLOUDFLARE_WIDGET_ANALYTICS="true"
-
-####################################################################################################
-#### WordPress: Various Settings ###################################################################
-####################################################################################################
-
-WP_CONFIG_SOURCE="http://mirrors.slickstack.io/wordpress/wp-config.txt"
+CLOUDFLARE_WIDGET_ANALYTICS="true" ## not yet supported
 
 ####################################################################################################
 #### Plugin Blacklist (MU Plugin): Various Settings ################################################
 ####################################################################################################
 
 PLUGIN_BLACKLIST_SOURCE="http://mirrors.slickstack.io/wordpress/blacklist.txt"
-
-####################################################################################################
-#### Email API Settings (SendGrid, Mailgun, Etc) ###################################################
-####################################################################################################
-
-# mailapikey="123456789"
-# mailserv="sendgrid"
-# mailsmtp="smtp.sendgrid.net"
-# mailport="587"
-# mailalert="user@example.com"
-# mailuser="example"
-# mailuserpass="password"
 
 ####################################################################################################
 #### Superuser (MU Plugin): Various Settings #######################################################
@@ -158,3 +191,15 @@ PLUGIN_BLACKLIST_SOURCE="http://mirrors.slickstack.io/wordpress/blacklist.txt"
 # SUPERUSER_PASSWORD
 # SUPERUSER_EMAIL
 # SUPERUSER_NICENAME
+
+####################################################################################################
+#### Email API Settings (SendGrid, Mailgun, Etc) ###################################################
+####################################################################################################
+
+# MAIL_API_KEY="123456789"
+### MAIL_SERVICE="sendgrid"
+# MAIL_SMTP_SERVER="smtp.sendgrid.net"
+# MAIL_PORT="587"
+# mailalert="user@example.com"
+# MAIL_USER="example"
+# MAIL_PASSWORD="password"

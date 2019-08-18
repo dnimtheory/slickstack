@@ -6,8 +6,7 @@
 #### mirror: http://mirrors.slickstack.io/ss-clean.txt #############################################
 #### path: /var/www/ss-clean #######################################################################
 #### destination: n/a (not a boilerplate) ##########################################################
-#### purpose: cleans up various junk files and unsafe or unsupported files #########################
-#### ss version: SlickStack alpha ss6c #############################################################
+#### purpose: cleans up various unsafe or unnecessary files (entire SlickStack server) #############
 #### module version: n/a ###########################################################################
 ####################################################################################################
 
@@ -16,6 +15,15 @@
 
 ## include SlickStack configuration ##
 source /var/www/ss-config
+
+####################################################################################################
+#### Delete Entire Bash Command History (Sudo User) ################################################
+####################################################################################################
+
+## Ref: https://www.techrepublic.com/article/how-to-effectively-clear-your-bash-history/
+
+cat /dev/null > /home/${SUDO_USER}/.bash_history
+cat /dev/null > /home/${SFTP_USER}/.bash_history
 
 ####################################################################################################
 #### cleanup Ubuntu files and various junk files outside the public root ###########################
@@ -48,7 +56,15 @@ rm -R -f /etc/nginx/cache*
 ## delete SlickStack leftovers ##
 rm -R -f /var/www/ss
 rm -R -f /var/www/monit.log
-rm -f /var/www/'$'
+rm -R -f /var/www/'$'
+rm -R -f /var/www/html/wp-completion.bash
+rm -R -f /var/www/meta/wp-completion.bash
+rm -R -f /var/www/meta/.wp-completion.bash
+rm -R -f /home/wp-completion.bash
+rm -R -f /home/${SUDO_USER}/config.yml
+rm -R -f /home/${SUDO_USER}/wp-cli.yml
+# rm -R -f /var/www/html/.wp-cli
+# rm -R -f /var/www/html/wp-cli
 
 ## delete slickstack junk files ##
 find /var/www/ -name "*.save*" -type f -delete

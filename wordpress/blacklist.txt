@@ -74,6 +74,8 @@
 ;; Devin Vinson ;;
 ;; Elliot Condon ;;
 ;; Enrico Battocchi ;;
+;; Eric Mann ;;
+;; Erick Hitter ;;
 ;; Frank Goossens ;;
 ;; Frédéric Demarle ;;
 ;; GoDadady ;;
@@ -86,8 +88,10 @@
 ;; John Blackbourn ;;
 ;; Justin Tadlock ;;
 ;; Kathy Darling ;;
+;; Kaspars Dambis ;;
 ;; Leon Stafford ;;
 ;; MailPoet ;;
+;; Marcus Sykes ;;
 ;; Metorik ;;
 ;; Mika Epstein ;;
 ;; Mike Jolley ;;
@@ -97,6 +101,7 @@
 ;; OM4 (Glenn Nicholas, James Collins) ;;
 ;; Paul David Clark ;;
 ;; Peter Suhm ;;
+;; Pippin Williamson ;;
 ;; Pressjitsu (Eric Mann, Erick Hitter) ;;
 ;; Prospress ;;
 ;; Red Sand Media Group (Scott Allen) ;;
@@ -134,20 +139,20 @@
 ;;;; 1. Long-Term Disallowed Plugin Vendors (Recurring Ethical-Technical Reasons) ;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Alex Panagis ;;
-;; Bhanu Ahluwalia ;;
-;; Brian Lee Jackson ;;
+;; Alex Panagis ;; consumer fraud, harassment, slander ;;
+;; Bhanu Ahluwalia ;; consumer fraud, spyware, ransomware ;;
+;; Brian Lee Jackson ;; consumer fraud, code theft ;;
 ;; Jetpack ;;
 ;; Kinsta (Brian Jackon, Alex Panagis, Jon Penland, Mark Gavalda) ;;
-;; Kodemann ;; all plugins are abandoned ;;
-;; Macho Themes (Alex Panagis) ;;
-;; MyThemeShop (Bhanu Ahluwalia, Suraj Vibhute) ;; spyware, ransomware, death threats, consumer fraud ;;
+;; Kodemann ;; abandoned ;;
+;; Macho Themes (Alex Panagis) ;; consumer fraud ;;
+;; MyThemeShop (Bhanu Ahluwalia, Suraj Vibhute) ;; consumer fraud, spyware, ransomware, death threats ;;
 ;; OptimizePress ;;
-;; Rank Math SEO (Bhanu Ahluwalia, Suraj Vibhute) ;; spyware, ransomware, death threats, consumer fraud ;;
-;; PerfMatters (Brian Lee Jackson) ;; 
-;; Pipdig (Phil Clothier) ;; 
-;; Phil Clothier ;;
-;; Suraj Vibhute ;;
+;; Rank Math SEO (Bhanu Ahluwalia, Suraj Vibhute) ;; consumer fraud, spyware, ransomware, death threats ;;
+;; PerfMatters (Brian Lee Jackson) ;; code theft ;;
+;; Pipdig (Phil Clothier) ;; spyware ;;
+;; Phil Clothier ;; spyware ;;
+;; Suraj Vibhute ;; consumer fraud, spyware, ransomware ;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; 2. Short-Term (Temporarily) Disallowed Plugin Vendors ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -161,13 +166,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; BestWebSoft ;;
-;; Brainstorm Force ;;
+;; Brainstorm Force ;; bloated, creates instability
+;; Contempo Themes (Chris Robinson) ;; poor coding, poor maintenance
 ;; Course Cats ;; excessive API calls, poor coding
 ;; Elegant Themes (Divi) ;;
 ;; Genesis Framework ;; proprietary frameworks
 ;; Joost de Valk ;;
-;; Leadpages ;;
-;; Noah Kagan ;; bloated, excessive API calls
+;; Leadpages ;; bloated, poor maintenance, creates instability
+;; Nextend (Roland Soos, Daniel David) ;; consumer fraud
+;; Noah Kagan ;; bloated, excessive API calls, poor maintenance
 ;; Om Ak Solutions (Ankit Singla, Nikhil Khokhar, Savi Goyal) ;;
 ;; OnTheGoSystems (WPML, Toolset) ;; bloated, poor coding, security issues
 ;; Photocrati (Imagely / NextGen Gallery) ;;
@@ -176,8 +183,8 @@
 ;; ShortPixel ;; spammy, generates junk files
 ;; Soliloquy (WPBeginner) ;;
 ;; StudioPress ;; proprietary frameworks
-;; SumoMe ;;
-;; Syed Balkhi ;;
+;; SumoMe ;; bloated, excessive API calls, poor maintenance
+;; Syed Balkhi ;; spammy
 ;; TagDiv ;; various bad practices, excessive logging, history of exploitable code
 ;; ThemeFusion (Avada) ;;
 ;; Thrive Themes ;; bloated, poor coding, excessive logging, serious errors, hijacks wp core functions
@@ -188,7 +195,7 @@
 ;; WpIndeed ;; poor coding, serious errors
 ;; WPMU DEV ;;
 ;; YITH ;; spammy, security issues, poor coding
-;; Team Yoast ;;
+;; Team Yoast ;; spammy, deceptive
 ;; Yotpo ;; ransomware
 ;; Zendesk ;;
 
@@ -467,7 +474,8 @@ emoji-shortcode ;; bloated, not maintained
 emojics-wp ;; bloated
 enable-gzip-compression ;; ss conflicts (apache)
 enhanced-custom-permalinks ;; creates instability, potential seo penalties, bad practice, not maintained
-envato-market ;; ss conflicts, blocks WordPress from receiving updates/patches
+;; wp-envato-market ;; ss conflicts, blocks WordPress from receiving updates/patches (whitelist for now claims to be fixed)
+;; envato-market ;; ss conflicts, blocks WordPress from receiving updates/patches (whitelist for now claims to be fixed)
 envato-wordpress-toolkit ;; deprecated
 eps-301-redirects ;; excessive logging, better options exist
 error-log-monitor ;; ss conflicts
@@ -682,6 +690,7 @@ monsterinsights-performance ;; excessive logging
 /mp6/ ;; deprecated, exists in wp core
 mts-url-shortener ;; spyware company, poor coding, serious errors, better options exist (MyThemeShop)
 multi-google-analytics ;; bloated, not maintained, bad practice
+multipurpose-sliders ;; deprecated, serious errors, no public docs (a.k.a. iWorks Sliders by Marcin Pietrzak)
 my-custom-css ;; serious errors, not maintained, better options exist
 my-database-admin ;; bad practice, creates instability, likely exploitable
 my-smtp-wp ;; blacklist risk (smtp)
@@ -712,6 +721,7 @@ o3-social-share ;; not maintained
 odihost-easy-redirect-301 ;; not maintained, potential serious errors (does not remove data on deactivation)
 official-statcounter-plugin-for-wordpress ;; serious errors
 ol_scrapes ;; blackhat seo, copyright issues, no public docs
+one-click-child-theme ;; deprecated
 onlywire ;; idk
 /opcache/ ;; ss conflicts, not maintained
 optimize-scripts-styles ;; ss conflicts
@@ -1291,6 +1301,9 @@ The following plugins will be disallowed on our network in December 2020, please
 ;; match any path (case insensitive)
 ;; for exact directory matches use slashes e.g. /revslider/
 [path future]
+woocommerce-digital-download-free-shipping ;; serious errors, not maintained
+;; oauth-twitter-feed-for-developers ;; not maintained (but appears to work okay for now)
+;; /google-remarketing/ ;; not maintained (but appears to work okay for now)
 floating-social-media-icon ;; bloated, bad practice
 /postman-smtp/ ;; deprecated
 themetrust-social ;; not maintained, no public changelog, better options exist
@@ -1434,6 +1447,7 @@ wp-user-frontend ;; bloated, bad practice (too many functions), poor coding, hij
 ;; google-analytics-for-wordpress ;; bloated (monster insights)
 ;; /jilt-for-edd/ ;; fatal errors, excessive logging, possible excessive API usage
 ;; jonimo-simple-redirect ;; not maintained
+;; clickcease-click-fraud-protection ;; poor code, poor maintenance, better options exist (embed code directly)
 ;; klaviyo ;; not maintained, serious errors
 ;; /linker/ ;; not maintained
 ;; /monarch/ ;; possible excessive logging (elegant themes)
@@ -1514,6 +1528,7 @@ wp-user-frontend ;; bloated, bad practice (too many functions), poor coding, hij
 ;; digiproveblog ;; pointless
 ;; sociallocker-next-premium ;; possible not maintained
 ;; wp-instagram-widget ;; possibly abandoned
+;; wp-login-customize ;; possibly abandoned
 ;; commercegurus-toolkit ;; no public docs, possibly not maintained (Envato vendor add-on plugin)
 
 ;; match exact class names (case sensitive)
@@ -1554,12 +1569,14 @@ download-theme ;; utility
 easy-theme-and-plugin-upgrades ;; import/export
 ;; elegant-themes-updater-master ;; vendor updates
 enable-media-replace ;; utility
+export-media-with-selected-content ;; import/export
 export-all-urls ;; import/export
 export-database ;; import/export
 export-user-data ;; import/export
 export-woocommerce ;; import/export
 export-woocommerce-pro ;; import/export
 file-manager ;; utility
+file-manager-advanced ;; utility
 force-regenerate-thumbnails ;; utility
 ggpkg-import ;; import/export
 heatmap-for-wp ;; utility
