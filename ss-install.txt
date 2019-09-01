@@ -7,56 +7,158 @@
 #### path: /var/www/ss-install #####################################################################
 #### destination: n/a (not a boilerplate) ##########################################################
 #### purpose: reinstalls the SlickStack server and all LEMP modules, etc (idempotent) ##############
-#### module version: n/a ###########################################################################
+#### module version: Ubuntu 18.04 ##################################################################
 ####################################################################################################
 
-## THE SS-CONFIG FILE MUST BE CONFIGURED BEFORE RUNNING THE SS-INSTALL SCRIPT ##
+## THE SS-CONFIG FILE MUST BE PROPERLY CONFIGURED BEFORE RUNNING THE SS-INSTALL SCRIPT ##
 
 ## include SlickStack configuration ##
 source /var/www/ss-config
 
-# Make sure correct Ubuntu version is installed
-# DEP_UBUNTU_VERSION="18.04"
-# UBUNTU_VERSION=`lsb_release -rs`
-# if [ "${DEP_UBUNTU_VERSION}" != "${UBUNTU_VERSION}" ]; then
-#         echo "Deployscript for Ubuntu ${DEP_UBUNTU_VERSION} only. This is ${UBUNTU_VERSION}."
-#         exit 1
-# fi
+## ensure correct Ubuntu version is installed ##
+UBUNTU_VERSION=`lsb_release -rs`
+if [[ "${UBUNTU_VERSION}" != "18.04" ]]; then
+    echo -e "\e[93mSlickStack is designed for Ubuntu 18.04 only, but this server is running Ubuntu ${UBUNTU_VERSION}.\e[0m" >&2
+    exit 1
+fi
 
-## verify ss-config build matches ss-install build ##
-if [[ "$SS_BUILD" != "AUG2019E" ]]; then 
+## verify ss-config build matches ss-install compatibility ##
+if [[ "$SS_BUILD" != "AUG2019G" ]]; then 
     echo -e "\e[93mYour ss-config file is outdated. Please rebuild it and run ss-install again.\e[0m" >&2
     exit 1
 fi
 
-## backup the current database before proceeding ##
+## backup database before proceeding ##
 source /var/www/ss-dump
 
 ####################################################################################################
-#### retrieve latest SlickStack core files (ss-check) ##############################################
+#### Configure Ubuntu: Create SlickStack Users + Set Various System Defaults #######################
+####################################################################################################
+
+## MESSAGE ##
+echo -e "\e[36mConfiguring users, permissions and Ubuntu defaults...\e[0m"
+
+## set root password ##
+echo root:$ROOT_PASSWORD | /usr/sbin/chpasswd
+
+## ensure root password never expires ##
+chage -E -1 -m 0 -M -1 -I -1 -W 99999 root
+
+## create sudo user ##
+adduser --disabled-password --gecos "" $SUDO_USER
+echo $SUDO_USER:$SUDO_PASSWORD | /usr/sbin/chpasswd
+
+## create sftp user ##
+adduser --disabled-password --gecos "" $SFTP_USER
+echo $SFTP_USER:$SFTP_PASSWORD | /usr/sbin/chpasswd
+
+## set default editor to nano ##
+update-alternatives --set editor /bin/nano
+
+## set UTC timezone ##
+timedatectl set-timezone UTC
+
+####################################################################################################
+#### Download Latest SlickStack Core Scripts + Cron Jobs (SS-Check) ################################
 ####################################################################################################
 
 ## MESSAGE ##
 echo -e "\e[36mRetrieving latest SlickStack files and copying them to local server...\e[0m"
 
 ## download latest versions ##
-wget --no-cache --no-cookies -O /tmp/ss-check.txt http://mirrors.slickstack.io/ss-check.txt
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/ss-check http://mirrors.slickstack.io/ss-check.txt
 
-## rename files ##
-mv /tmp/ss-check.txt /tmp/ss-check
-
-## copy to destinations ##
+## copy files to their destinations ##
 cp -R -f -d --no-preserve=mode,ownership /tmp/ss-check /var/www/ss-check
 
 ## reset permissions ##
 chown root:root /var/www/ss-check
-chmod 700 /var/www/ss-check
+chmod 6770 /var/www/ss-check
 
-## call scripts ##
+## run scripts ##
 source /var/www/ss-check
 
 ####################################################################################################
-#### Install Various Packages Via Default Ubuntu Repos #############################################
+#### Configure Ubuntu: Root + Sudo User Permissions (a.k.a. Sudoers) ###############################
+####################################################################################################
+
+## download latest versions ##
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/sudoers http://mirrors.slickstack.io/ubuntu/sudoers.txt
+
+## replace variables ##
+sed -i "s/@SUDO_USER/${SUDO_USER}/g" /tmp/sudoers
+
+## copy files to their destinations ##
+cp -R -f -d --no-preserve=mode,ownership /tmp/sudoers /etc/sudoers
+
+## reset permissions ##
+chown root:root /etc/sudoers
+chmod 0440 /etc/sudoers
+
+####################################################################################################
+#### Configure Ubuntu: SSH + SFTP User Permissions (a.k.a. SSHD Configuration) #####################
+####################################################################################################
+
+## MESSAGE ##
+echo -e "\e[36mConfiguring SSH (SFTP) settings, user permissions, and port number...\e[0m"
+
+## download latest versions ##
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/sshd_config http://mirrors.slickstack.io/ubuntu/sshd-config.txt
+
+## replace variables ##
+sed -i "s/@SUDO/${SUDO_USER}/g" /tmp/sshd_config
+sed -i "s/@USER/${SFTP_USER}/g" /tmp/sshd_config
+
+## set port number ##
+if [[ -z "$SSH_PORT" ]]; then 
+    sed -i "s/@SSH_PORT/6969/g" /tmp/sshd_config
+else 
+    sed -i "s/@SSH_PORT/${SSH_PORT}/g" /tmp/sshd_config
+fi
+
+## copy files to their destinations ##
+cp -R -f --no-preserve=mode,ownership /tmp/sshd_config /etc/ssh/sshd_config
+
+## reset permissions ##
+chown root:root /etc/ssh/sshd_config
+chmod 0440 /etc/ssh/sshd_config
+
+## restart services ##
+/etc/init.d/ssh restart
+
+####################################################################################################
+#### Configure Ubuntu: Install SlickStack (Root) Crontab File ######################################
+####################################################################################################
+
+## MESSAGE ##
+echo -e "\e[36mInstalling the SlickStack crontab file to Ubuntu root user crontab...\e[0m"
+
+## install crontab ##
+crontab /var/www/0-crontab
+
+## reset permissions ##
+chown root:root /var/spool/cron/crontabs/root
+chmod 0600 /var/spool/cron/crontabs/root
+
+## reload crontab ##
+/etc/init.d/cron reload
+
+####################################################################################################
+#### Configure Ubuntu: Optimize The System Kernel ##################################################
+####################################################################################################
+
+## download latest versions ##
+# wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/sysctl.conf http://mirrors.slickstack.io/ubuntu/sysctl.txt
+
+## copy files to their destinations ##
+# cp -R -f -d --no-preserve=mode,ownership /tmp/sysctl.conf /etc/sysctl.conf
+
+## reset permissions ##
+chown root:root /etc/sysctl.conf
+chmod 0664 /etc/sysctl.conf
+
+####################################################################################################
+#### Configure SlickStack: Install Various Modules Via Default Ubuntu Packages #####################
 ####################################################################################################
 
 ## MESSAGE ##
@@ -101,131 +203,6 @@ DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/u
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install certbot python-certbot-nginx
 
 ####################################################################################################
-#### configure Ubuntu users, permissions, and defaults #############################################
-####################################################################################################
-
-## MESSAGE ##
-echo -e "\e[36mConfiguring users, permissions and Ubuntu defaults...\e[0m"
-
-## root ssh password ##
-echo root:$ROOT_PASSWORD | /usr/sbin/chpasswd
-
-## ensure root password never expires ##
-chage -E -1 -m 0 -M -1 -I -1 -W 99999 root
-
-## sudo ssh user ##
-adduser --disabled-password --gecos "" $SUDO_USER
-echo $SUDO_USER:$SUDO_PASSWORD | /usr/sbin/chpasswd
-
-## sftp user (chroot jail) ##
-adduser --disabled-password --gecos "" $SFTP_USER
-echo $SFTP_USER:$SFTP_PASSWORD | /usr/sbin/chpasswd
-
-## set default editor to nano ##
-update-alternatives --set editor /bin/nano
-
-## set UTC timezone ##
-timedatectl set-timezone UTC
-
-####################################################################################################
-#### Configure Ubuntu: Sudo Users (a.k.a. Visudo) ##################################################
-####################################################################################################
-
-## download latest versions ##
-wget --no-cache --no-cookies -O /tmp/sudoers.txt http://mirrors.slickstack.io/ubuntu/sudoers.txt
-
-## replace variables ##
-sed -i "s/@SUDO/${SUDO_USER}/g" /tmp/sudoers.txt
-
-## rename files ##
-mv /tmp/sudoers.txt /tmp/sudoers
-
-## copy to destinations ##
-cp -R -f -d --no-preserve=mode,ownership /tmp/sudoers /etc/sudoers
-
-## reset permissions ##
-chown root:root /etc/sudoers
-chmod 440 /etc/sudoers
-
-####################################################################################################
-#### Configure Ubuntu: SSH + SFTP User Permissions #################################################
-####################################################################################################
-
-## MESSAGE: explain repos ##
-echo -e "\e[36mConfiguring various SSH (SFTP) settings and permissions...\e[0m"
-
-## download latest versions ##
-wget --no-cache --no-cookies -O /tmp/sshd-config.txt http://mirrors.slickstack.io/ubuntu/sshd-config.txt
-
-## replace variables ##
-sed -i "s/@SUDO/${SUDO_USER}/g" /tmp/sshd-config.txt
-sed -i "s/@USER/${SFTP_USER}/g" /tmp/sshd-config.txt
-
-## set port number ##
-if [[ -z "$SSH_PORT" ]]; then 
-    sed -i "s/@SSH_PORT/6969/g" /tmp/sshd-config.txt
-else 
-    sed -i "s/@SSH_PORT/${SSH_PORT}/g" /tmp/sshd-config.txt
-fi
-
-## rename files ##
-mv /tmp/sshd-config.txt /tmp/sshd_config
-
-## overwrite all files to their various destinations ##
-cp -R -f --no-preserve=mode,ownership /tmp/sshd_config /etc/ssh/sshd_config
-
-## reset permissions ##
-chown root:root /etc/ssh/sshd_config
-
-## restart ssh ##
-/etc/init.d/ssh restart
-
-####################################################################################################
-#### install crontab ###############################################################################
-####################################################################################################
-
-## MESSAGE: explain repos ##
-echo -e "\e[36mInstalling the SlickStack crontab file to Ubuntu crontab...\e[0m"
-
-## delete tmp files ##
-# rm -R -f /tmp/crontab.txt /tmp/root
-## download latest versions ##
-# cd /tmp/
-# wget --no-cache http://mirrors.slickstack.io/ubuntu/crontab.txt
-## rename files ##
-# mv /tmp/crontab.txt /tmp/root
-## copy files to destinations ##
-# cp -R -f --preserve=mode,ownership /tmp/root /var/spool/cron/crontabs/root
-## delete tmp files ##
-# rm -R -f /tmp/crontab.txt /tmp/root
-
-## install slickstack crontab ##
-crontab /var/www/0-crontab
-
-## reset permissions ##
-chown root:root /var/spool/cron/crontabs/root
-
-## reload crontab ##
-/etc/init.d/cron reload
-
-####################################################################################################
-#### Configure Ubuntu: System Kernel ###############################################################
-####################################################################################################
-
-## download latest versions ##
-# wget --no-cache --no-cookies -O /tmp/sysctl.txt http://mirrors.slickstack.io/ubuntu/sysctl.txt
-
-## rename files ##
-# mv /tmp/sysctl.txt /tmp/sysctl.conf
-
-## copy to destinations ##
-# cp -R -f -d --no-preserve=mode,ownership /tmp/sysctl.conf /etc/sysctl.conf
-
-## reset permissions ##
-# chown root:root /etc/sysctl.conf
-# chmod 664 /etc/sysctl.conf
-
-####################################################################################################
 #### Install PHP-FPM 7.2 + Required Extensions #####################################################
 ####################################################################################################
 
@@ -247,9 +224,9 @@ DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/u
 # DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install php7.2-bcmath php7.2-curl php7.2-fpm php7.2-gd php7.2-imagick php7.2-json php7.2-mbstring php7.2-mysql php7.2-soap php7.2-xml php7.2-zip
 
 ## download latest versions ##
-wget --no-cache --no-cookies -O /tmp/php-fpm-conf.txt http://mirrors.slickstack.io/php-fpm/php-fpm-conf.txt
-wget --no-cache --no-cookies -O /tmp/php-ini.txt http://mirrors.slickstack.io/php-fpm/php-ini.txt
-wget --no-cache --no-cookies -O /tmp/www-conf.txt http://mirrors.slickstack.io/php-fpm/www-conf.txt
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/php-fpm-conf.txt http://mirrors.slickstack.io/php-fpm/php-fpm-conf.txt
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/php-ini.txt http://mirrors.slickstack.io/php-fpm/php-ini.txt
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/www-conf.txt http://mirrors.slickstack.io/php-fpm/www-conf.txt
 
 ## rename files ##
 mv /tmp/php-fpm-conf.txt /tmp/php-fpm.conf
@@ -356,50 +333,44 @@ source /var/www/meta/.bash-aliases' >> /home/${SUDO_USER}/.bashrc
 source /home/${SUDO_USER}/.bashrc
 
 ####################################################################################################
-#### Install Nginx-Extras (Current Ubuntu Repo Version) ############################################
+#### Configure Nginx: Install Nginx-Extras Via Launchpad Nginx PPA #################################
 ####################################################################################################
 
-## update repos ##
+## update Ubuntu package cache ##
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" update
 
-## add nginx mainline (dev) ppa ##
+## add Nginx mainline (dev) branch ppa ##
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/add-apt-repository --yes ppa:nginx/development
 
-## update repos ##
+## update package cache (again... not needed after Ubuntu 18.04 but for fun) ##
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" update
 
-## install nginx-extras ##
+## install Nginx-Extras ##
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install nginx-extras
 
 ####################################################################################################
-#### Configure Nginx: FastCGI Cache Settings #######################################################
+#### Configure Nginx: Optimize Nginx Configuration + FastCGI Cache Configuration ###################
 ####################################################################################################
 
 ## download latest versions ##
-wget --no-cache --no-cookies -O /tmp/nginx-conf.txt http://mirrors.slickstack.io/nginx/nginx-conf.txt
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/nginx.conf http://mirrors.slickstack.io/nginx/nginx-conf.txt
 
-## replace placeholders with slickstack variables ##
-sed -i "s/@CACHEMEMORY/${FASTCGI_CACHE_MEMORY}/g" /tmp/nginx-conf.txt
-sed -i "s/@CACHEINACTIVE/${FASTCGI_CACHE_INACTIVE}/g" /tmp/nginx-conf.txt
-sed -i "s/@CACHEMAXSIZE/${FASTCGI_CACHE_MAX_SIZE}/g" /tmp/nginx-conf.txt
+## replace variables ##
+sed -i "s/@FASTCGI_CACHE_MEMORY/${FASTCGI_CACHE_MEMORY}/g" /tmp/nginx.conf
+sed -i "s/@FASTCGI_CACHE_INACTIVE/${FASTCGI_CACHE_INACTIVE}/g" /tmp/nginx.conf
+sed -i "s/@FASTCGI_CACHE_MAX_SIZE/${FASTCGI_CACHE_MAX_SIZE}/g" /tmp/nginx.conf
 
-## rename files ##
-mv /tmp/nginx-conf.txt /tmp/nginx.conf
-
-## copy files to destinations ##
+## copy files to their destinations ##
 cp -R -f --no-preserve=mode,ownership /tmp/nginx.conf /etc/nginx/nginx.conf
 
-## create fastcgi cache directory if does not exist ##
+## ensure cache directory exists (will not overwrite) ##
 mkdir -p /var/www/cache
 
 ## reset permissions ##
 chown www-data:www-data /var/www/cache
 chown root:root /etc/nginx/nginx.conf
 
-####################################################################################################
-#### Configure Nginx: FastCGI Cache TMPFS Settings (Optional) ######################################
-####################################################################################################
-
+## set TMPFS cache storage if enabled ##
 if [[ "$FASTCGI_CACHE_TMPFS" == "true" ]]; then
     mount -t tmpfs -o size=${FASTCGI_CACHE_MEMORY} tmpfs /var/www/cache
     sed -i '/tmpfs/d' /etc/fstab
@@ -409,31 +380,22 @@ else
 fi
 
 ####################################################################################################
-#### Configure Server Block (Nginx-Extras) #########################################################
+#### Configure Nginx: Setup The Server Block (Single Block Only) ###################################
 ####################################################################################################
 
-## delete tmp files ##
-rm -R -f /tmp/default.txt /tmp/default /tmp/server-block.txt /tmp/server-block /tmp/server-block-ssl.txt /tmp/server-block-ssl
-
 ## download latest versions ##
-cd /tmp/
-wget --no-cache --no-cookies -O /tmp/server-block-ssl.txt http://mirrors.slickstack.io/nginx/server-block-ssl.txt
-mv /tmp/server-block-ssl.txt /tmp/default.txt
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/default http://mirrors.slickstack.io/nginx/server-block-ssl.txt
 
-## replace @DOMAIN placeholder with slickstack variable ##
-sed -i "s/@DOMAIN/${SITE_DOMAIN}/g" /tmp/default.txt
-sed -i "s/@CACHEVALID/${FASTCGI_CACHE_VALID}/g" /tmp/default.txt
+## replace variables ##
+sed -i "s/@DOMAIN/${SITE_DOMAIN}/g" /tmp/default
+sed -i "s/@CACHEVALID/${FASTCGI_CACHE_VALID}/g" /tmp/default
 
-## enable or disable fastcgi cache ##
-## set skip_cache default to 0 only if fastcgi cache enabled in ss-config ##
+## set FastCGI Cache if enabled ##
 if [[ "$FASTCGI_CACHE" == "false" ]]; then 
-    sed -i "s/@FASTCGI/1/g" /tmp/default.txt
+    sed -i "s/@FASTCGI/1/g" /tmp/default
 else 
-    sed -i "s/@FASTCGI/0/g" /tmp/default.txt
+    sed -i "s/@FASTCGI/0/g" /tmp/default
 fi
-
-## rename files ##
-mv /tmp/default.txt /tmp/default
 
 ## copy files to destinations ##
 cp -R -f --no-preserve=mode,ownership /tmp/default /etc/nginx/sites-available/default
@@ -441,25 +403,22 @@ cp -R -f --no-preserve=mode,ownership /tmp/default /etc/nginx/sites-available/de
 ## reset permissions ##
 chown root:root /etc/nginx/sites-available/default
 
-## restart nginx ##
+## restart services ##
 /etc/init.d/nginx restart
 
 ####################################################################################################
-#### Install OpenSSL + Certbot (Let's Encrypt) Free SSL Certificates ###############################
+#### Install OpenSSL + Certbot (Let's Encrypt) Free SSL Certificates (SS-Encrypt) ##################
 ####################################################################################################
 
-## include ss-encrypt script here ##
+## run scripts ##
 source /var/www/ss-encrypt
 
 ####################################################################################################
-#### Install MySQL 5.7 #############################################################################
+#### Configure MySQL: Install MySQL 5.7 Via Ubuntu Packages ########################################
 ####################################################################################################
 
 ## set noninteractive ##
 export DEBIAN_FRONTEND=noninteractive;
-
-## store mysql root password ##
-## http://serverfault.com/a/830352/344471 ##
 
 if [[ -z "$DB_PASSWORD_ROOT" ]]; then 
     echo debconf mysql-server/root_password password ${dbrootpass} | debconf-set-selections
@@ -481,8 +440,8 @@ fi
 ## install mysql 5.7 ##
 DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' /usr/bin/apt -q --yes -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install mysql-server-5.7 
 
-## confirm installed ##
-echo "MySQL 5.7 is installed, now we will secure it."
+## MESSAGE ##
+echo -e "\e[36mMySQL 5.7 is installed, now we will secure it...\e[0m"
 
 ####################################################################################################
 #### Configure MySQL ###############################################################################
@@ -583,54 +542,40 @@ else
 fi
 
 ####################################################################################################
-#### Install WordPress #############################################################################
+#### Configure WordPress: Download + Unzip WordPress CMS ###########################################
 ####################################################################################################
 
 ## cleanup files ##
 rm -R -f /var/www/html/wordpress*
-rm -R -f /var/www/html/classicpress*
 
 ## change dir (temp fix) ##
 cd /var/www/html
 
 ## download latest version ##
-if [[ "$SLICKSTACK_APP" == "classicpress" ]]; then 
-    wget --no-cache --no-cookies -O /var/www/html/classicpress.zip http://mirrors.slickstack.io/classicpress/classicpress.zip
-    unzip -o /var/www/html/classicpress.zip
-    chown -R www-data:wordpress /var/www/html/classicpress
-    chmod 775 /var/www/html/classicpress
-    rm -R -f /var/www/html/wp-admin*
-    rm -R -f /var/www/html/wp-includes*
-    rm -R -f /var/www/html/wp*.php*
-    rm -R -f /var/www/html/index*.php*
-    rm -R -f /var/www/html/composer.json*
-    rsync -raqI /var/www/html/classicpress/* ./
-else 
-    wget --no-cache --no-cookies -O /var/www/html/wordpress.zip http://mirrors.slickstack.io/wordpress/wordpress.zip
-    unzip -o /var/www/html/wordpress.zip
-    chown -R www-data:wordpress /var/www/html/wordpress
-    chmod 775 /var/www/html/wordpress
-    rm -R -f /var/www/html/wp-admin*
-    rm -R -f /var/www/html/wp-includes*
-    rm -R -f /var/www/html/wp*.php*
-    rm -R -f /var/www/html/index*.php*
-    rm -R -f /var/www/html/composer.json*
-    rsync -raqI /var/www/html/wordpress/* ./
-fi
+wget --no-cache --no-cookies --tries=3 --timeout=15 -O /var/www/html/wordpress.zip http://mirrors.slickstack.io/wordpress/wordpress.zip
+unzip -o /var/www/html/wordpress.zip
+chown -R www-data:wordpress /var/www/html/wordpress
+chmod 775 /var/www/html/wordpress
+rm -R -f /var/www/html/wp-admin*
+rm -R -f /var/www/html/wp-includes*
+rm -R -f /var/www/html/wp*.php*
+rm -R -f /var/www/html/index*.php*
+rm -R -f /var/www/html/composer.json*
+rsync -raqI /var/www/html/wordpress/* ./
 
 ## cleanup files ##
 rm -R -f /var/www/html/wordpress*
 rm -R -f /var/www/html/classicpress*
 
 ####################################################################################################
-#### Configure WordPress (or ClassicPress) #########################################################
+#### Configure WordPress: Replace All Variables In WP-Config File ##################################
 ####################################################################################################
 
 ## retrieve wp-config.php boilerplate ##
 if [[ -z "$WP_CONFIG_SOURCE" ]]; then 
-    wget --no-cache --no-cookies -O /tmp/wp-config.txt http://mirrors.slickstack.io/wordpress/wp-config.txt
+    wget --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/wp-config.txt http://mirrors.slickstack.io/wordpress/wp-config.txt
 else 
-    wget --no-check-certificate --no-cache --no-cookies -O /tmp/wp-config.txt "$WP_CONFIG_SOURCE"
+    wget --no-check-certificate --no-cache --no-cookies --tries=3 --timeout=15 -O /tmp/wp-config.txt "$WP_CONFIG_SOURCE"
 fi
 
 ## replace database placeholders ##
@@ -863,3 +808,5 @@ echo -e "\e[36mSlickStack installation complete! Please reboot server and ensure
 ## Ref: https://gist.github.com/beardedinbinary/79d7ad34f9980f0a4c23 ##
 ## Ref: https://www.linuxbabe.com/security/letsencrypt-webroot-tls-certificate
 ## Ref: https://stackoverflow.com/questions/49668542/create-a-script-that-adds-lines-of-code-to-bashrc-then-reloads-the-terminal
+## Ref: https://peteris.rocks/blog/unattended-installation-of-wordpress-on-ubuntu-server/
+## Ref: https://serverfault.com/questions/783527/non-interactive-silent-install-of-mysql-5-7-on-ubuntu-16-04-lts/830352#830352

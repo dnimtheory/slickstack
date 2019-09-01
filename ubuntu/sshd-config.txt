@@ -5,13 +5,13 @@
 #### path: n/a (boilerplate) #######################################################################
 #### destination: /etc/ssh/sshd_config (after install) #############################################
 #### purpose: SSH configuration file boilerplate (inclues settings for jailed SFTP user) ###########
-#### module version: n/a ###########################################################################
+#### module version: Ubuntu 18.04 ##################################################################
 ####################################################################################################
 
-## ssh/sftp port ##
+## port number ##
 Port @SSH_PORT
 
-## sshd protocol version ##
+## protocol version ##
 Protocol 2
 
 ## hostkeys for protocol 2 ##
@@ -31,13 +31,19 @@ ServerKeyBits 1024
 SyslogFacility AUTH
 LogLevel INFO
 
-## authentication ##
-LoginGraceTime 120
-PermitRootLogin no
-StrictModes yes
+####################################################################################################
+#### SSH Config: User Login Authentication Settings ################################################
+####################################################################################################
 
-## allow users to ssh/sftp ##
+## allowed users ##
 AllowUsers @SUDO @USER
+
+## login defaults ##
+PermitRootLogin no
+PermitEmptyPasswords no
+PasswordAuthentication yes
+ChallengeResponseAuthentication no
+StrictModes yes
 
 ## ssh keys ##
 RSAAuthentication yes
@@ -53,16 +59,6 @@ HostbasedAuthentication no
 # Uncomment if you don't trust ~/.ssh/known_hosts for RhostsRSAAuthentication
 #IgnoreUserKnownHosts yes
 
-## never ever ever set this to yes ##
-PermitEmptyPasswords no
-
-# Change to yes to enable challenge-response passwords (beware issues with
-# some PAM modules and threads)
-ChallengeResponseAuthentication no
-
-# Change to no to disable tunnelled clear text passwords
-#PasswordAuthentication yes
-
 # Kerberos options
 #KerberosAuthentication no
 #KerberosGetAFSToken no
@@ -77,8 +73,13 @@ X11Forwarding yes
 X11DisplayOffset 10
 PrintMotd no
 PrintLastLog yes
-TCPKeepAlive yes
 #UseLogin no
+
+## keepalive intervals (client pings replace TCP pings for up to 6 hours) ##
+LoginGraceTime 120
+TCPKeepAlive no 
+ClientAliveInterval 30
+ClientAliveCountMax 720
 
 #MaxStartups 10:30:60
 #Banner /etc/issue.net
@@ -110,3 +111,9 @@ ChrootDirectory /var/www
 ForceCommand internal-sftp
 AllowTcpForwarding no
 X11Forwarding no
+
+####################################################################################################
+#### External References Used By SlickStack To Improve This Script #################################
+####################################################################################################
+
+## Ref: https://www.simplified.guide/ssh/disable-timeout
