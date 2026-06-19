@@ -1,0 +1,59 @@
+*filter
+
+####################################################################################################
+#### author: SlickStack ############################################################################
+#### link: https://slickstack.io ###################################################################
+#### mirror: littlebizzy/slickstack/blob/master/modules/iptables/rules-v6.txt ######################
+#### path: /etc/iptables/rules.v6 ##################################################################
+#### destination: n/a ##############################################################################
+#### purpose: Hardcoded IPv6 rules for Iptables on SlickStack servers (replaced UFW) ###############
+#### module version: Iptables 1.8.x ################################################################
+#### sourced by: n/a ###############################################################################
+#### bash aliases: n/a (ss-install-iptables-config) ################################################
+####################################################################################################
+
+# default policies
+-P INPUT DROP
+-P FORWARD DROP
+-P OUTPUT ACCEPT
+
+# allow loopback traffic
+-A INPUT -i lo -j ACCEPT
+
+# allow established and related connections
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+# allow HTTP and HTTPS
+-A INPUT -p tcp -m multiport --dports 80,443 -m conntrack --ctstate NEW -j ACCEPT
+
+# allow essential ICMPv6 (ping + neighbor discovery)
+-A INPUT -p icmpv6 --icmpv6-type echo-request -j ACCEPT
+-A INPUT -p icmpv6 --icmpv6-type echo-reply -j ACCEPT
+-A INPUT -p icmpv6 --icmpv6-type router-solicitation -j ACCEPT
+-A INPUT -p icmpv6 --icmpv6-type router-advertisement -j ACCEPT
+-A INPUT -p icmpv6 --icmpv6-type neighbor-solicitation -j ACCEPT
+-A INPUT -p icmpv6 --icmpv6-type neighbor-advertisement -j ACCEPT
+-A INPUT -p icmpv6 --icmpv6-type redirect -j ACCEPT
+
+# allow outbound ICMPv6
+-A OUTPUT -p icmpv6 -j ACCEPT
+
+# allow DHCPv6 client requests (if applicable)
+-A INPUT -p udp --dport 546 -j ACCEPT
+
+# logging denied packets
+-A INPUT -m limit --limit 3/min --limit-burst 10 -j LOG --log-prefix "[IP6TABLES BLOCK] "
+
+# rate limit SSH connections
+-A INPUT -p tcp --dport 22 -m limit --limit 3/min --limit-burst 5 -j ACCEPT
+-A INPUT -p tcp --dport 22 -j REJECT
+
+COMMIT
+
+####################################################################################################
+#### SlickStack: External References Used To Improve This Script (Thanks, Interwebz) ###############
+####################################################################################################
+
+## Ref: ChatGPT
+
+## SS_EOF

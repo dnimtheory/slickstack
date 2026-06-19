@@ -1,0 +1,100 @@
+<?php
+/** ********************************************************************************************* */
+/** author: SlickStack ************************************************************************** */
+/** link: https://slickstack.io ***************************************************************** */
+/** mirror: littlebizzy/slickstack/blob/master/modules/php-fpm/ss-constants.txt ***************** */
+/** path: n/a (boilerplate) ********************************************************************* */
+/** destination: /var/www/meta/ss-constants.php (after install) ********************************* */
+/** purpose: Loads various SlickStack environment variables as PHP defined constants ************ */
+/** module version: PHP-FPM 8.3.x *************************************************************** */
+/** sourced by: wp-config.php ******************************************************************* */
+/** bash aliases: n/a (ss-install-php-config) *************************************************** */
+/** ********************************************************************************************* */
+
+/** DO NOT MODIFY SS-CONSTANTS DIRECTLY AS CHANGES WILL BE OVERWRITTEN BY SLICKSTACK */
+/** DEVELOPERS CAN USE THESE SLICKSTACK PHP CONSTANTS FOR ANY CUSTOM SCRIPTING */
+
+/** ********************************************************************************************* */
+/** SS-Constants: General Settings ************************************************************** */
+/** ********************************************************************************************* */
+
+/** below are some general PHP constants that reflect SlickStack settings and features */
+/** they are set here (not wp-config.php) to prevent clients from changing them */
+
+if ( ! defined( 'WP_CRON_METHOD' ) ) define( 'WP_CRON_METHOD', '@WP_CRON_METHOD' );
+if ( ! defined( 'WP_CRON_INTERVAL' ) ) define( 'WP_CRON_INTERVAL', '@WP_CRON_INTERVAL' );
+
+/** ********************************************************************************************* */
+/** SS-Constants: System Information ************************************************************ */
+/** ********************************************************************************************* */
+
+/** below are several useful system level info about the SlickStack server and modules */
+/** much of this is displayed in SlickStack dashboard but might be used elsewhere */
+
+if ( ! defined( 'SYSTEM_VIRTUAL' ) ) define( 'SYSTEM_VIRTUAL', '@SYSTEM_VIRTUAL' );
+if ( ! defined( 'SYSTEM_LINUX_KERNEL' ) ) define( 'SYSTEM_LINUX_KERNEL', '@SYSTEM_LINUX_KERNEL' );
+if ( ! defined( 'SYSTEM_OS_PRETTY_NAME' ) ) define( 'SYSTEM_OS_PRETTY_NAME', '@SYSTEM_OS_PRETTY_NAME' );
+if ( ! defined( 'SYSTEM_CPU_CORES' ) ) define( 'SYSTEM_CPU_CORES', '@SYSTEM_CPU_CORES' );
+if ( ! defined( 'SYSTEM_DISK_FREE' ) ) define( 'SYSTEM_DISK_FREE', '@SYSTEM_DISK_FREE' );
+if ( ! defined( 'SYSTEM_DISK_FREE_EASY' ) ) define( 'SYSTEM_DISK_FREE_EASY', '@SYSTEM_DISK_FREE_EASY' );
+if ( ! defined( 'SYSTEM_DISK_TOTAL' ) ) define( 'SYSTEM_DISK_TOTAL', '@SYSTEM_DISK_TOTAL' );
+if ( ! defined( 'SYSTEM_DISK_TOTAL_EASY' ) ) define( 'SYSTEM_DISK_TOTAL_EASY', '@SYSTEM_DISK_TOTAL_EASY' );
+if ( ! defined( 'SYSTEM_DISK_USED_PERCENT' ) ) define( 'SYSTEM_DISK_USED_PERCENT', '@SYSTEM_DISK_USED_PERCENT' );
+if ( ! defined( 'SYSTEM_MYSQL_SIZE' ) ) define( 'SYSTEM_MYSQL_SIZE', '@SYSTEM_MYSQL_SIZE' ); // delete if using remote database
+if ( ! defined( 'SYSTEM_MYSQL_VERSION' ) ) define( 'SYSTEM_MYSQL_VERSION', '@SYSTEM_MYSQL_VERSION' ); // delete if using remote database
+if ( ! defined( 'SYSTEM_IPV4_ADDRESS' ) ) define( 'SYSTEM_IPV4_ADDRESS', '@SYSTEM_IPV4_ADDRESS' );
+if ( ! defined( 'SYSTEM_IPV6_ADDRESS' ) ) define( 'SYSTEM_IPV6_ADDRESS', '@SYSTEM_IPV6_ADDRESS' );
+if ( ! defined( 'SYSTEM_HOSTNAME' ) ) define( 'SYSTEM_HOSTNAME', '@SYSTEM_HOSTNAME' );
+if ( ! defined( 'SYSTEM_PHP_VERSION' ) ) define( 'SYSTEM_PHP_VERSION', '@SYSTEM_PHP_VERSION' );
+if ( ! defined( 'SYSTEM_PHP_EXTENSIONS' ) ) define( 'SYSTEM_PHP_EXTENSIONS', '@SYSTEM_PHP_EXTENSIONS' );
+if ( ! defined( 'SYSTEM_SERVER_SOFTWARE' ) ) define( 'SYSTEM_SERVER_SOFTWARE', '@SYSTEM_SERVER_SOFTWARE' );
+
+/** ********************************************************************************************* */
+/** SS-Constants: SFTP Details ****************************************************************** */
+/** ********************************************************************************************* */
+
+/** SFTP credentials are saved here so that the SlickStack dashboard can display them */
+/** this is useful for less tech-savvy clients who are using SlickStack servers */
+
+if ( ! defined( 'SFTP_USER' ) ) define( 'SFTP_USER', '@SFTP_USER' );
+if ( ! defined( 'SFTP_PASSWORD' ) ) define( 'SFTP_PASSWORD', '@SFTP_PASSWORD' );
+if ( ! defined( 'SFTP_PORT' ) ) define( 'SFTP_PORT', '22' );
+if ( ! defined( 'SFTP_ROOT_DIR' ) ) define( 'SFTP_ROOT_DIR', '/var/www' );
+if ( ! defined( 'SFTP_PUBLIC_DIR' ) ) define( 'SFTP_PUBLIC_DIR', '/var/www/html' );
+
+/** ********************************************************************************************* */
+/** SS-Constants: Adminer *********************************************************************** */
+/** ********************************************************************************************* */
+
+if ( ! defined( 'ADMINER_PUBLIC' ) ) define( 'ADMINER_PUBLIC', '@ADMINER_PUBLIC' );
+
+/** ********************************************************************************************* */
+/** SS-Constants: Whitelabel Branding *********************************************************** */
+/** ********************************************************************************************* */
+
+/** these whitelabel options can be used in your custom WordPress plugins or otherwise */
+/** by default LittleBizzy branding is used as an example of a web host agency */
+
+if ( ! defined( 'WHITELABEL_BRAND' ) ) define( 'WHITELABEL_BRAND', '@WHITELABEL_BRAND' );
+if ( ! defined( 'WHITELABEL_HOMEPAGE' ) ) define( 'WHITELABEL_HOMEPAGE', '@WHITELABEL_HOMEPAGE' );
+if ( ! defined( 'WHITELABEL_SUPPORT_URL' ) ) define( 'WHITELABEL_SUPPORT_URL', '@WHITELABEL_SUPPORT_URL' );
+if ( ! defined( 'WHITELABEL_SUPPORT_EMAIL' ) ) define( 'WHITELABEL_SUPPORT_EMAIL', '@WHITELABEL_SUPPORT_EMAIL' );
+
+/** ********************************************************************************************* */
+/** SS-Constants: Staging + Dev Sites *********************************************************** */
+/** ********************************************************************************************* */
+
+if ( ! defined( 'STAGING_SITE_STATUS' ) ) define( 'STAGING_SITE_STATUS', '@STAGING_SITE_STATUS' );
+if ( ! defined( 'DEV_SITE_STATUS' ) ) define( 'DEV_SITE_STATUS', '@DEV_SITE_STATUS' );
+if ( ! defined( 'SYNC_STAGING_SITE_STATUS' ) ) define( 'SYNC_STAGING_SITE_STATUS', '@SYNC_STAGING_SITE_STATUS' );
+
+/** ********************************************************************************************* */
+/** SlickStack: External References Used To Improve This Script (Thanks, Interwebz) ************* */
+/** ********************************************************************************************* */
+
+// Ref: ChatGPT
+// Ref: https://stackoverflow.com/questions/4948663/php-get-bool-to-echo-false-when-false
+// Ref: https://pimylifeup.com/php-constants/
+// Ref: https://docs.php.earth/security/configuration/
+
+// SS_EOF

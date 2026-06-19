@@ -1,0 +1,1092 @@
+#!/bin/bash
+
+####################################################################################################
+#### author: SlickStack ############################################################################
+#### link: https://slickstack.io ###################################################################
+#### mirror: littlebizzy/slickstack/blob/master/bash/ss-check.txt ##################################
+#### path: /var/www/ss-check #######################################################################
+#### destination: n/a (not a boilerplate) ##########################################################
+#### purpose: Retrieves all SlickStack bash scripts and cron jobs (except for ss-check) ############
+#### module version: Ubuntu 18.04 to 24.04 LTS #####################################################
+#### sourced by: ss-install ########################################################################
+#### bash aliases: ss check ########################################################################
+####################################################################################################
+
+## SS-CHECK MAINTAINS CRITICAL BASH SCRIPTS AND CRON JOBS FOR YOUR SLICKSTACK SERVER ##
+## MESS AROUND WITH CRONTAB SCHEDULES AND SS-CONFIG INTERVALS AT YOUR OWN RISK ##
+
+####################################################################################################
+#### TABLE OF CONTENTS (SS-Check) ##################################################################
+####################################################################################################
+
+## this is a brief summary of the different code snippets you will find in this script ##
+## each section should be commented so you understand what is being accomplished ##
+
+## A. Source SS-Config + SS-Functions
+## B. Touch Timestamp File
+## C. Message (Begin Script)
+## D. Download Cron Jobs
+## E. Download Custom Cron Job Boilerplates
+## F. Download Bash Scripts (Except SS-Check)
+## G. Install Cron Jobs
+## H. Install Custom Cron Job Boilerplates (If Not Exist)
+## I. Install Bash Scripts (Except SS-Check)
+
+####################################################################################################
+#### A. SS-Check: Source SS-Config + SS-Functions ##################################################
+####################################################################################################
+
+## before anything else we must source the critical variables that power this script ##
+## ss-config is setup during ss-install wizard but ss-functions is hardcoded ##
+
+## source ss-config ##
+source /var/www/ss-config
+
+## source ss-functions ##
+source /var/www/ss-functions
+
+## BELOW THIS RELIES ON SS-CONFIG AND SS-FUNCTIONS
+
+####################################################################################################
+#### B. SS-Check: Touch Timestamp File #############################################################
+####################################################################################################
+
+## this is a dummy timestamp file that will remember the last time this script was run ##
+## it can be useful for developer reference and is sometimes used by SlickStack ##
+
+ss_touch "${TIMESTAMP_SS_CHECK}"
+
+####################################################################################################
+#### C. SS-Check: Message (Begin Script) ###########################################################
+####################################################################################################
+
+## this is a simple message that announces to the shell the purpose of this bash script ##
+## it will only be seen by sudo users who manually run this script in the shell ##
+
+ss_echo "${COLOR_INFO}Running ss-check... ${COLOR_RESET}"
+
+####################################################################################################
+#### D. SS-Check: Download Cron Jobs ###############################################################
+####################################################################################################
+
+## here we retrieve all the latest cron jobs and bash scripts to ensure they are current ##
+## this process does not affect ss-config, LEMP modules, or the ss-check script ##
+
+## download 00-crontab from github first then gitlab then sourceforge ##
+ss_wget "${TMP_00_CRONTAB}" "${GITHUB_00_CRONTAB}"
+ss_grep 'SS_EOF' "${TMP_00_CRONTAB}" || ss_wget "${TMP_00_CRONTAB}" "${GITLAB_00_CRONTAB}"
+ss_grep 'SS_EOF' "${TMP_00_CRONTAB}" || ss_wget "${TMP_00_CRONTAB}" "${SOURCEFORGE_00_CRONTAB}"
+
+## download 01-cron-minutely from github first then gitlab then sourceforge ##
+ss_wget "${TMP_01_CRON_MINUTELY}" "${GITHUB_01_CRON_MINUTELY}"
+ss_grep 'SS_EOF' "${TMP_01_CRON_MINUTELY}" || ss_wget "${TMP_01_CRON_MINUTELY}" "${GITLAB_01_CRON_MINUTELY}"
+ss_grep 'SS_EOF' "${TMP_01_CRON_MINUTELY}" || ss_wget "${TMP_01_CRON_MINUTELY}" "${SOURCEFORGE_01_CRON_MINUTELY}"
+
+## download 02-cron-often from github first then gitlab then sourceforge ##
+ss_wget "${TMP_02_CRON_OFTEN}" "${GITHUB_02_CRON_OFTEN}"
+ss_grep 'SS_EOF' "${TMP_02_CRON_OFTEN}" || ss_wget "${TMP_02_CRON_OFTEN}" "${GITLAB_02_CRON_OFTEN}"
+ss_grep 'SS_EOF' "${TMP_02_CRON_OFTEN}" || ss_wget "${TMP_02_CRON_OFTEN}" "${SOURCEFORGE_02_CRON_OFTEN}"
+
+## download 03-cron-regular from github first then gitlab then sourceforge ##
+ss_wget "${TMP_03_CRON_REGULAR}" "${GITHUB_03_CRON_REGULAR}"
+ss_grep 'SS_EOF' "${TMP_03_CRON_REGULAR}" || ss_wget "${TMP_03_CRON_REGULAR}" "${GITLAB_03_CRON_REGULAR}"
+ss_grep 'SS_EOF' "${TMP_03_CRON_REGULAR}" || ss_wget "${TMP_03_CRON_REGULAR}" "${SOURCEFORGE_03_CRON_REGULAR}"
+
+## download 04-cron-quarter-hourly from github first then gitlab then sourceforge ##
+ss_wget "${TMP_04_CRON_QUARTER_HOURLY}" "${GITHUB_04_CRON_QUARTER_HOURLY}"
+ss_grep 'SS_EOF' "${TMP_04_CRON_QUARTER_HOURLY}" || ss_wget "${TMP_04_CRON_QUARTER_HOURLY}" "${GITLAB_04_CRON_QUARTER_HOURLY}"
+ss_grep 'SS_EOF' "${TMP_04_CRON_QUARTER_HOURLY}" || ss_wget "${TMP_04_CRON_QUARTER_HOURLY}" "${SOURCEFORGE_04_CRON_QUARTER_HOURLY}"
+
+## download 05-cron-half-hourly from github first then gitlab then sourceforge ##
+ss_wget "${TMP_05_CRON_HALF_HOURLY}" "${GITHUB_05_CRON_HALF_HOURLY}"
+ss_grep 'SS_EOF' "${TMP_05_CRON_HALF_HOURLY}" || ss_wget "${TMP_05_CRON_HALF_HOURLY}" "${GITLAB_05_CRON_HALF_HOURLY}"
+ss_grep 'SS_EOF' "${TMP_05_CRON_HALF_HOURLY}" || ss_wget "${TMP_05_CRON_HALF_HOURLY}" "${SOURCEFORGE_05_CRON_HALF_HOURLY}"
+
+## download 06-cron-hourly from github first then gitlab then sourceforge ##
+ss_wget "${TMP_06_CRON_HOURLY}" "${GITHUB_06_CRON_HOURLY}"
+ss_grep 'SS_EOF' "${TMP_06_CRON_HOURLY}" || ss_wget "${TMP_06_CRON_HOURLY}" "${GITLAB_06_CRON_HOURLY}"
+ss_grep 'SS_EOF' "${TMP_06_CRON_HOURLY}" || ss_wget "${TMP_06_CRON_HOURLY}" "${SOURCEFORGE_06_CRON_HOURLY}"
+
+## download 07-cron-quarter-daily from github first then gitlab then sourceforge ##
+ss_wget "${TMP_07_CRON_QUARTER_DAILY}" "${GITHUB_07_CRON_QUARTER_DAILY}"
+ss_grep 'SS_EOF' "${TMP_07_CRON_QUARTER_DAILY}" || ss_wget "${TMP_07_CRON_QUARTER_DAILY}" "${GITLAB_07_CRON_QUARTER_DAILY}"
+ss_grep 'SS_EOF' "${TMP_07_CRON_QUARTER_DAILY}" || ss_wget "${TMP_07_CRON_QUARTER_DAILY}" "${SOURCEFORGE_07_CRON_QUARTER_DAILY}"
+
+## download 08-cron-half-daily from github first then gitlab then sourceforge ##
+ss_wget "${TMP_08_CRON_HALF_DAILY}" "${GITHUB_08_CRON_HALF_DAILY}"
+ss_grep 'SS_EOF' "${TMP_08_CRON_HALF_DAILY}" || ss_wget "${TMP_08_CRON_HALF_DAILY}" "${GITLAB_08_CRON_HALF_DAILY}"
+ss_grep 'SS_EOF' "${TMP_08_CRON_HALF_DAILY}" || ss_wget "${TMP_08_CRON_HALF_DAILY}" "${SOURCEFORGE_08_CRON_HALF_DAILY}"
+
+## download 09-cron-daily from github first then gitlab then sourceforge ##
+ss_wget "${TMP_09_CRON_DAILY}" "${GITHUB_09_CRON_DAILY}"
+ss_grep 'SS_EOF' "${TMP_09_CRON_DAILY}" || ss_wget "${TMP_09_CRON_DAILY}" "${GITLAB_09_CRON_DAILY}"
+ss_grep 'SS_EOF' "${TMP_09_CRON_DAILY}" || ss_wget "${TMP_09_CRON_DAILY}" "${SOURCEFORGE_09_CRON_DAILY}"
+
+## download 10-cron-half-weekly from github first then gitlab then sourceforge ##
+ss_wget "${TMP_10_CRON_HALF_WEEKLY}" "${GITHUB_10_CRON_HALF_WEEKLY}"
+ss_grep 'SS_EOF' "${TMP_10_CRON_HALF_WEEKLY}" || ss_wget "${TMP_10_CRON_HALF_WEEKLY}" "${GITLAB_10_CRON_HALF_WEEKLY}"
+ss_grep 'SS_EOF' "${TMP_10_CRON_HALF_WEEKLY}" || ss_wget "${TMP_10_CRON_HALF_WEEKLY}" "${SOURCEFORGE_10_CRON_HALF_WEEKLY}"
+
+## download 11-cron-weekly from github first then gitlab then sourceforge ##
+ss_wget "${TMP_11_CRON_WEEKLY}" "${GITHUB_11_CRON_WEEKLY}"
+ss_grep 'SS_EOF' "${TMP_11_CRON_WEEKLY}" || ss_wget "${TMP_11_CRON_WEEKLY}" "${GITLAB_11_CRON_WEEKLY}"
+ss_grep 'SS_EOF' "${TMP_11_CRON_WEEKLY}" || ss_wget "${TMP_11_CRON_WEEKLY}" "${SOURCEFORGE_11_CRON_WEEKLY}"
+
+## download 12-cron-half-monthly from github first then gitlab then sourceforge ##
+ss_wget "${TMP_12_CRON_HALF_MONTHLY}" "${GITHUB_12_CRON_HALF_MONTHLY}"
+ss_grep 'SS_EOF' "${TMP_12_CRON_HALF_MONTHLY}" || ss_wget "${TMP_12_CRON_HALF_MONTHLY}" "${GITLAB_12_CRON_HALF_MONTHLY}"
+ss_grep 'SS_EOF' "${TMP_12_CRON_HALF_MONTHLY}" || ss_wget "${TMP_12_CRON_HALF_MONTHLY}" "${SOURCEFORGE_12_CRON_HALF_MONTHLY}"
+
+## download 13-cron-monthly from github first then gitlab then sourceforge ##
+ss_wget "${TMP_13_CRON_MONTHLY}" "${GITHUB_13_CRON_MONTHLY}"
+ss_grep 'SS_EOF' "${TMP_13_CRON_MONTHLY}" || ss_wget "${TMP_13_CRON_MONTHLY}" "${GITLAB_13_CRON_MONTHLY}"
+ss_grep 'SS_EOF' "${TMP_13_CRON_MONTHLY}" || ss_wget "${TMP_13_CRON_MONTHLY}" "${SOURCEFORGE_13_CRON_MONTHLY}"
+
+## download 14-cron-sometimes from github first then gitlab then sourceforge ##
+ss_wget "${TMP_14_CRON_SOMETIMES}" "${GITHUB_14_CRON_SOMETIMES}"
+ss_grep 'SS_EOF' "${TMP_14_CRON_SOMETIMES}" || ss_wget "${TMP_14_CRON_SOMETIMES}" "${GITLAB_14_CRON_SOMETIMES}"
+ss_grep 'SS_EOF' "${TMP_14_CRON_SOMETIMES}" || ss_wget "${TMP_14_CRON_SOMETIMES}" "${SOURCEFORGE_14_CRON_SOMETIMES}"
+
+####################################################################################################
+#### E. SS-Check: Download Custom Cron Job Boilerplates ############################################
+####################################################################################################
+
+## here we retrieve all the latest cron jobs and bash scripts to ensure they are current ##
+## this process does not affect ss-config, LEMP modules, or the ss-check script ##
+
+## download 01-cron-minutely-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_01_CRON_MINUTELY_CUSTOM}" "${GITHUB_01_CRON_MINUTELY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_01_CRON_MINUTELY_CUSTOM}" || ss_wget "${TMP_01_CRON_MINUTELY_CUSTOM}" "${GITLAB_01_CRON_MINUTELY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_01_CRON_MINUTELY_CUSTOM}" || ss_wget "${TMP_01_CRON_MINUTELY_CUSTOM}" "${SOURCEFORGE_01_CRON_MINUTELY_CUSTOM}"
+
+## download 02-cron-often-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_02_CRON_OFTEN_CUSTOM}" "${GITHUB_02_CRON_OFTEN_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_02_CRON_OFTEN_CUSTOM}" || ss_wget "${TMP_02_CRON_OFTEN_CUSTOM}" "${GITLAB_02_CRON_OFTEN_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_02_CRON_OFTEN_CUSTOM}" || ss_wget "${TMP_02_CRON_OFTEN_CUSTOM}" "${SOURCEFORGE_02_CRON_OFTEN_CUSTOM}"
+
+## download 03-cron-regular-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_03_CRON_REGULAR_CUSTOM}" "${GITHUB_03_CRON_REGULAR_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_03_CRON_REGULAR_CUSTOM}" || ss_wget "${TMP_03_CRON_REGULAR_CUSTOM}" "${GITLAB_03_CRON_REGULAR_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_03_CRON_REGULAR_CUSTOM}" || ss_wget "${TMP_03_CRON_REGULAR_CUSTOM}" "${SOURCEFORGE_03_CRON_REGULAR_CUSTOM}"
+
+## download 04-cron-quarter-hourly-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_04_CRON_QUARTER_HOURLY_CUSTOM}" "${GITHUB_04_CRON_QUARTER_HOURLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_04_CRON_QUARTER_HOURLY_CUSTOM}" || ss_wget "${TMP_04_CRON_QUARTER_HOURLY_CUSTOM}" "${GITLAB_04_CRON_QUARTER_HOURLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_04_CRON_QUARTER_HOURLY_CUSTOM}" || ss_wget "${TMP_04_CRON_QUARTER_HOURLY_CUSTOM}" "${SOURCEFORGE_04_CRON_QUARTER_HOURLY_CUSTOM}"
+
+## download 05-cron-half-hourly-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_05_CRON_HALF_HOURLY_CUSTOM}" "${GITHUB_05_CRON_HALF_HOURLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_05_CRON_HALF_HOURLY_CUSTOM}" || ss_wget "${TMP_05_CRON_HALF_HOURLY_CUSTOM}" "${GITLAB_05_CRON_HALF_HOURLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_05_CRON_HALF_HOURLY_CUSTOM}" || ss_wget "${TMP_05_CRON_HALF_HOURLY_CUSTOM}" "${SOURCEFORGE_05_CRON_HALF_HOURLY_CUSTOM}"
+
+## download 06-cron-hourly-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_06_CRON_HOURLY_CUSTOM}" "${GITHUB_06_CRON_HOURLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_06_CRON_HOURLY_CUSTOM}" || ss_wget "${TMP_06_CRON_HOURLY_CUSTOM}" "${GITLAB_06_CRON_HOURLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_06_CRON_HOURLY_CUSTOM}" || ss_wget "${TMP_06_CRON_HOURLY_CUSTOM}" "${SOURCEFORGE_06_CRON_HOURLY_CUSTOM}"
+
+## download 07-cron-quarter-daily-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_07_CRON_QUARTER_DAILY_CUSTOM}" "${GITHUB_07_CRON_QUARTER_DAILY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_07_CRON_QUARTER_DAILY_CUSTOM}" || ss_wget "${TMP_07_CRON_QUARTER_DAILY_CUSTOM}" "${GITLAB_07_CRON_QUARTER_DAILY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_07_CRON_QUARTER_DAILY_CUSTOM}" || ss_wget "${TMP_07_CRON_QUARTER_DAILY_CUSTOM}" "${SOURCEFORGE_07_CRON_QUARTER_DAILY_CUSTOM}"
+
+## download 08-cron-half-daily-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_08_CRON_HALF_DAILY_CUSTOM}" "${GITHUB_08_CRON_HALF_DAILY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_08_CRON_HALF_DAILY_CUSTOM}" || ss_wget "${TMP_08_CRON_HALF_DAILY_CUSTOM}" "${GITLAB_08_CRON_HALF_DAILY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_08_CRON_HALF_DAILY_CUSTOM}" || ss_wget "${TMP_08_CRON_HALF_DAILY_CUSTOM}" "${SOURCEFORGE_08_CRON_HALF_DAILY_CUSTOM}"
+
+## download 09-cron-daily-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_09_CRON_DAILY_CUSTOM}" "${GITHUB_09_CRON_DAILY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_09_CRON_DAILY_CUSTOM}" || ss_wget "${TMP_09_CRON_DAILY_CUSTOM}" "${GITLAB_09_CRON_DAILY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_09_CRON_DAILY_CUSTOM}" || ss_wget "${TMP_09_CRON_DAILY_CUSTOM}" "${SOURCEFORGE_09_CRON_DAILY_CUSTOM}"
+
+## download 10-cron-half-weekly-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_10_CRON_HALF_WEEKLY_CUSTOM}" "${GITHUB_10_CRON_HALF_WEEKLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_10_CRON_HALF_WEEKLY_CUSTOM}" || ss_wget "${TMP_10_CRON_HALF_WEEKLY_CUSTOM}" "${GITLAB_10_CRON_HALF_WEEKLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_10_CRON_HALF_WEEKLY_CUSTOM}" || ss_wget "${TMP_10_CRON_HALF_WEEKLY_CUSTOM}" "${SOURCEFORGE_10_CRON_HALF_WEEKLY_CUSTOM}"
+
+## download 11-cron-weekly-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_11_CRON_WEEKLY_CUSTOM}" "${GITHUB_11_CRON_WEEKLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_11_CRON_WEEKLY_CUSTOM}" || ss_wget "${TMP_11_CRON_WEEKLY_CUSTOM}" "${GITLAB_11_CRON_WEEKLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_11_CRON_WEEKLY_CUSTOM}" || ss_wget "${TMP_11_CRON_WEEKLY_CUSTOM}" "${SOURCEFORGE_11_CRON_WEEKLY_CUSTOM}"
+
+## download 12-cron-half-monthly-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_12_CRON_HALF_MONTHLY_CUSTOM}" "${GITHUB_12_CRON_HALF_MONTHLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_12_CRON_HALF_MONTHLY_CUSTOM}" || ss_wget "${TMP_12_CRON_HALF_MONTHLY_CUSTOM}" "${GITLAB_12_CRON_HALF_MONTHLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_12_CRON_HALF_MONTHLY_CUSTOM}" || ss_wget "${TMP_12_CRON_HALF_MONTHLY_CUSTOM}" "${SOURCEFORGE_12_CRON_HALF_MONTHLY_CUSTOM}"
+
+## download 13-cron-monthly-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_13_CRON_MONTHLY_CUSTOM}" "${GITHUB_13_CRON_MONTHLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_13_CRON_MONTHLY_CUSTOM}" || ss_wget "${TMP_13_CRON_MONTHLY_CUSTOM}" "${GITLAB_13_CRON_MONTHLY_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_13_CRON_MONTHLY_CUSTOM}" || ss_wget "${TMP_13_CRON_MONTHLY_CUSTOM}" "${SOURCEFORGE_13_CRON_MONTHLY_CUSTOM}"
+
+## download 14-cron-sometimes-custom from github first then gitlab then sourceforge ##
+ss_wget "${TMP_14_CRON_SOMETIMES_CUSTOM}" "${GITHUB_14_CRON_SOMETIMES_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_14_CRON_SOMETIMES_CUSTOM}" || ss_wget "${TMP_14_CRON_SOMETIMES_CUSTOM}" "${GITLAB_14_CRON_SOMETIMES_CUSTOM}"
+ss_grep 'SS_EOF' "${TMP_14_CRON_SOMETIMES_CUSTOM}" || ss_wget "${TMP_14_CRON_SOMETIMES_CUSTOM}" "${SOURCEFORGE_14_CRON_SOMETIMES_CUSTOM}"
+
+####################################################################################################
+#### F. SS-Check: Download Bash Scripts (Except SS-Check) ##########################################
+####################################################################################################
+
+## here we retrieve all the latest cron jobs and bash scripts to ensure they are current ##
+## this process does not affect ss-config, LEMP modules, or the ss-check script ##
+
+## download ss-clean-database from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_CLEAN_DATABASE}" "${GITHUB_SS_CLEAN_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_CLEAN_DATABASE}" || ss_wget "${TMP_SS_CLEAN_DATABASE}" "${GITLAB_SS_CLEAN_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_CLEAN_DATABASE}" || ss_wget "${TMP_SS_CLEAN_DATABASE}" "${SOURCEFORGE_SS_CLEAN_DATABASE}"
+
+## download ss-clean-files from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_CLEAN_FILES}" "${GITHUB_SS_CLEAN_FILES}"
+ss_grep 'SS_EOF' "${TMP_SS_CLEAN_FILES}" || ss_wget "${TMP_SS_CLEAN_FILES}" "${GITLAB_SS_CLEAN_FILES}"
+ss_grep 'SS_EOF' "${TMP_SS_CLEAN_FILES}" || ss_wget "${TMP_SS_CLEAN_FILES}" "${SOURCEFORGE_SS_CLEAN_FILES}"
+
+## download ss-config-sample from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_CONFIG_SAMPLE}" "${GITHUB_SS_CONFIG_SAMPLE}"
+ss_grep 'SS_EOF' "${TMP_SS_CONFIG_SAMPLE}" || ss_wget "${TMP_SS_CONFIG_SAMPLE}" "${GITLAB_SS_CONFIG_SAMPLE}"
+ss_grep 'SS_EOF' "${TMP_SS_CONFIG_SAMPLE}" || ss_wget "${TMP_SS_CONFIG_SAMPLE}" "${SOURCEFORGE_SS_CONFIG_SAMPLE}"
+
+## download ss-dump-database from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_DUMP_DATABASE}" "${GITHUB_SS_DUMP_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_DUMP_DATABASE}" || ss_wget "${TMP_SS_DUMP_DATABASE}" "${GITLAB_SS_DUMP_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_DUMP_DATABASE}" || ss_wget "${TMP_SS_DUMP_DATABASE}" "${SOURCEFORGE_SS_DUMP_DATABASE}"
+
+## download ss-dump-files from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_DUMP_FILES}" "${GITHUB_SS_DUMP_FILES}"
+ss_grep 'SS_EOF' "${TMP_SS_DUMP_FILES}" || ss_wget "${TMP_SS_DUMP_FILES}" "${GITLAB_SS_DUMP_FILES}"
+ss_grep 'SS_EOF' "${TMP_SS_DUMP_FILES}" || ss_wget "${TMP_SS_DUMP_FILES}" "${SOURCEFORGE_SS_DUMP_FILES}"
+
+## download ss-empty-logs from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_EMPTY_LOGS}" "${GITHUB_SS_EMPTY_LOGS}"
+ss_grep 'SS_EOF' "${TMP_SS_EMPTY_LOGS}" || ss_wget "${TMP_SS_EMPTY_LOGS}" "${GITLAB_SS_EMPTY_LOGS}"
+ss_grep 'SS_EOF' "${TMP_SS_EMPTY_LOGS}" || ss_wget "${TMP_SS_EMPTY_LOGS}" "${SOURCEFORGE_SS_EMPTY_LOGS}"
+
+## download ss-encrypt-acme from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_ENCRYPT_ACME}" "${GITHUB_SS_ENCRYPT_ACME}"
+ss_grep 'SS_EOF' "${TMP_SS_ENCRYPT_ACME}" || ss_wget "${TMP_SS_ENCRYPT_ACME}" "${GITLAB_SS_ENCRYPT_ACME}"
+ss_grep 'SS_EOF' "${TMP_SS_ENCRYPT_ACME}" || ss_wget "${TMP_SS_ENCRYPT_ACME}" "${SOURCEFORGE_SS_ENCRYPT_ACME}"
+
+## download ss-encrypt-certbot from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_ENCRYPT_CERTBOT}" "${GITHUB_SS_ENCRYPT_CERTBOT}"
+ss_grep 'SS_EOF' "${TMP_SS_ENCRYPT_CERTBOT}" || ss_wget "${TMP_SS_ENCRYPT_CERTBOT}" "${GITLAB_SS_ENCRYPT_CERTBOT}"
+ss_grep 'SS_EOF' "${TMP_SS_ENCRYPT_CERTBOT}" || ss_wget "${TMP_SS_ENCRYPT_CERTBOT}" "${SOURCEFORGE_SS_ENCRYPT_CERTBOT}"
+
+## download ss-encrypt-openssl from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_ENCRYPT_OPENSSL}" "${GITHUB_SS_ENCRYPT_OPENSSL}"
+ss_grep 'SS_EOF' "${TMP_SS_ENCRYPT_OPENSSL}" || ss_wget "${TMP_SS_ENCRYPT_OPENSSL}" "${GITLAB_SS_ENCRYPT_OPENSSL}"
+ss_grep 'SS_EOF' "${TMP_SS_ENCRYPT_OPENSSL}" || ss_wget "${TMP_SS_ENCRYPT_OPENSSL}" "${SOURCEFORGE_SS_ENCRYPT_OPENSSL}"
+
+## download ss-functions from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_FUNCTIONS}" "${GITHUB_SS_FUNCTIONS}"
+ss_grep 'SS_EOF' "${TMP_SS_FUNCTIONS}" || ss_wget "${TMP_SS_FUNCTIONS}" "${GITLAB_SS_FUNCTIONS}"
+ss_grep 'SS_EOF' "${TMP_SS_FUNCTIONS}" || ss_wget "${TMP_SS_FUNCTIONS}" "${SOURCEFORGE_SS_FUNCTIONS}"
+
+## download ss-import-database from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_IMPORT_DATABASE}" "${GITHUB_SS_IMPORT_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_IMPORT_DATABASE}" || ss_wget "${TMP_SS_IMPORT_DATABASE}" "${GITLAB_SS_IMPORT_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_IMPORT_DATABASE}" || ss_wget "${TMP_SS_IMPORT_DATABASE}" "${SOURCEFORGE_SS_IMPORT_DATABASE}"
+
+## download ss-import-files from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_IMPORT_FILES}" "${GITHUB_SS_IMPORT_FILES}"
+ss_grep 'SS_EOF' "${TMP_SS_IMPORT_FILES}" || ss_wget "${TMP_SS_IMPORT_FILES}" "${GITLAB_SS_IMPORT_FILES}"
+ss_grep 'SS_EOF' "${TMP_SS_IMPORT_FILES}" || ss_wget "${TMP_SS_IMPORT_FILES}" "${SOURCEFORGE_SS_IMPORT_FILES}"
+
+## download ss-install from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL}" "${GITHUB_SS_INSTALL}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL}" || ss_wget "${TMP_SS_INSTALL}" "${GITLAB_SS_INSTALL}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL}" || ss_wget "${TMP_SS_INSTALL}" "${SOURCEFORGE_SS_INSTALL}"
+
+## download ss-install-fail2ban-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_FAIL2BAN_CONFIG}" "${GITHUB_SS_INSTALL_FAIL2BAN_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_FAIL2BAN_CONFIG}" || ss_wget "${TMP_SS_INSTALL_FAIL2BAN_CONFIG}" "${GITLAB_SS_INSTALL_FAIL2BAN_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_FAIL2BAN_CONFIG}" || ss_wget "${TMP_SS_INSTALL_FAIL2BAN_CONFIG}" "${SOURCEFORGE_SS_INSTALL_FAIL2BAN_CONFIG}"
+
+## download ss-install-fail2ban-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_FAIL2BAN_PACKAGES}" "${GITHUB_SS_INSTALL_FAIL2BAN_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_FAIL2BAN_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_FAIL2BAN_PACKAGES}" "${GITLAB_SS_INSTALL_FAIL2BAN_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_FAIL2BAN_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_FAIL2BAN_PACKAGES}" "${SOURCEFORGE_SS_INSTALL_FAIL2BAN_PACKAGES}"
+
+## download ss-install-iptables-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_IPTABLES_CONFIG}" "${GITHUB_SS_INSTALL_IPTABLES_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_IPTABLES_CONFIG}" || ss_wget "${TMP_SS_INSTALL_IPTABLES_CONFIG}" "${GITLAB_SS_INSTALL_IPTABLES_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_IPTABLES_CONFIG}" || ss_wget "${TMP_SS_INSTALL_IPTABLES_CONFIG}" "${SOURCEFORGE_SS_INSTALL_IPTABLES_CONFIG}"
+
+## download ss-install-iptables-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_IPTABLES_PACKAGES}" "${GITHUB_SS_INSTALL_IPTABLES_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_IPTABLES_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_IPTABLES_PACKAGES}" "${GITLAB_SS_INSTALL_IPTABLES_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_IPTABLES_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_IPTABLES_PACKAGES}" "${SOURCEFORGE_SS_INSTALL_IPTABLES_PACKAGES}"
+
+## download ss-install-memcached-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_MEMCACHED_CONFIG}" "${GITHUB_SS_INSTALL_MEMCACHED_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MEMCACHED_CONFIG}" || ss_wget "${TMP_SS_INSTALL_MEMCACHED_CONFIG}" "${GITLAB_SS_INSTALL_MEMCACHED_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MEMCACHED_CONFIG}" || ss_wget "${TMP_SS_INSTALL_MEMCACHED_CONFIG}" "${SOURCEFORGE_SS_INSTALL_MEMCACHED_CONFIG}"
+
+## download ss-install-memcached-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_MEMCACHED_PACKAGES}" "${GITHUB_SS_INSTALL_MEMCACHED_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MEMCACHED_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_MEMCACHED_PACKAGES}" "${GITLAB_SS_INSTALL_MEMCACHED_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MEMCACHED_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_MEMCACHED_PACKAGES}" "${SOURCEFORGE_SS_INSTALL_MEMCACHED_PACKAGES}"
+
+## download ss-install-mysql-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_MYSQL_CONFIG}" "${GITHUB_SS_INSTALL_MYSQL_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MYSQL_CONFIG}" || ss_wget "${TMP_SS_INSTALL_MYSQL_CONFIG}" "${GITLAB_SS_INSTALL_MYSQL_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MYSQL_CONFIG}" || ss_wget "${TMP_SS_INSTALL_MYSQL_CONFIG}" "${SOURCEFORGE_SS_INSTALL_MYSQL_CONFIG}"
+
+## download ss-install-mysql-database from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_MYSQL_DATABASE}" "${GITHUB_SS_INSTALL_MYSQL_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MYSQL_DATABASE}" || ss_wget "${TMP_SS_INSTALL_MYSQL_DATABASE}" "${GITLAB_SS_INSTALL_MYSQL_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MYSQL_DATABASE}" || ss_wget "${TMP_SS_INSTALL_MYSQL_DATABASE}" "${SOURCEFORGE_SS_INSTALL_MYSQL_DATABASE}"
+
+## download ss-install-mysql-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_MYSQL_PACKAGES}" "${GITHUB_SS_INSTALL_MYSQL_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MYSQL_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_MYSQL_PACKAGES}" "${GITLAB_SS_INSTALL_MYSQL_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MYSQL_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_MYSQL_PACKAGES}" "${SOURCEFORGE_SS_INSTALL_MYSQL_PACKAGES}"
+
+## download ss-install-nginx-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_NGINX_CONFIG}" "${GITHUB_SS_INSTALL_NGINX_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_NGINX_CONFIG}" || ss_wget "${TMP_SS_INSTALL_NGINX_CONFIG}" "${GITLAB_SS_INSTALL_NGINX_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_NGINX_CONFIG}" || ss_wget "${TMP_SS_INSTALL_NGINX_CONFIG}" "${SOURCEFORGE_SS_INSTALL_NGINX_CONFIG}"
+
+## download ss-install-nginx-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_NGINX_PACKAGES}" "${GITHUB_SS_INSTALL_NGINX_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_NGINX_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_NGINX_PACKAGES}" "${GITLAB_SS_INSTALL_NGINX_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_NGINX_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_NGINX_PACKAGES}" "${SOURCEFORGE_SS_INSTALL_NGINX_PACKAGES}"
+
+## download ss-install-php-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_PHP_CONFIG}" "${GITHUB_SS_INSTALL_PHP_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_PHP_CONFIG}" || ss_wget "${TMP_SS_INSTALL_PHP_CONFIG}" "${GITLAB_SS_INSTALL_PHP_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_PHP_CONFIG}" || ss_wget "${TMP_SS_INSTALL_PHP_CONFIG}" "${SOURCEFORGE_SS_INSTALL_PHP_CONFIG}"
+
+## download ss-install-php-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_PHP_PACKAGES}" "${GITHUB_SS_INSTALL_PHP_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_PHP_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_PHP_PACKAGES}" "${GITLAB_SS_INSTALL_PHP_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_PHP_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_PHP_PACKAGES}" "${SOURCEFORGE_SS_INSTALL_PHP_PACKAGES}"
+
+## download ss-install-rclone-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_RCLONE_CONFIG}" "${GITHUB_SS_INSTALL_RCLONE_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_RCLONE_CONFIG}" || ss_wget "${TMP_SS_INSTALL_RCLONE_CONFIG}" "${GITLAB_SS_INSTALL_RCLONE_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_RCLONE_CONFIG}" || ss_wget "${TMP_SS_INSTALL_RCLONE_CONFIG}" "${SOURCEFORGE_SS_INSTALL_RCLONE_CONFIG}"
+
+## download ss-install-rclone-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_RCLONE_PACKAGES}" "${GITHUB_SS_INSTALL_RCLONE_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_RCLONE_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_RCLONE_PACKAGES}" "${GITLAB_SS_INSTALL_RCLONE_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_RCLONE_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_RCLONE_PACKAGES}" "${SOURCEFORGE_SS_INSTALL_RCLONE_PACKAGES}"
+
+## download ss-install-ubuntu-bash from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_UBUNTU_BASH}" "${GITHUB_SS_INSTALL_UBUNTU_BASH}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_BASH}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_BASH}" "${GITLAB_SS_INSTALL_UBUNTU_BASH}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_BASH}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_BASH}" "${SOURCEFORGE_SS_INSTALL_UBUNTU_BASH}"
+
+## download ss-install-ubuntu-crontab from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_UBUNTU_CRONTAB}" "${GITHUB_SS_INSTALL_UBUNTU_CRONTAB}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_CRONTAB}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_CRONTAB}" "${GITLAB_SS_INSTALL_UBUNTU_CRONTAB}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_CRONTAB}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_CRONTAB}" "${SOURCEFORGE_SS_INSTALL_UBUNTU_CRONTAB}"
+
+## download ss-install-ubuntu-kernel from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_UBUNTU_KERNEL}" "${GITHUB_SS_INSTALL_UBUNTU_KERNEL}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_KERNEL}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_KERNEL}" "${GITLAB_SS_INSTALL_UBUNTU_KERNEL}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_KERNEL}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_KERNEL}" "${SOURCEFORGE_SS_INSTALL_UBUNTU_KERNEL}"
+
+## download ss-install-ubuntu-ssh from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_UBUNTU_SSH}" "${GITHUB_SS_INSTALL_UBUNTU_SSH}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_SSH}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_SSH}" "${GITLAB_SS_INSTALL_UBUNTU_SSH}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_SSH}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_SSH}" "${SOURCEFORGE_SS_INSTALL_UBUNTU_SSH}"
+
+## download ss-install-ubuntu-swapfile from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_UBUNTU_SWAPFILE}" "${GITHUB_SS_INSTALL_UBUNTU_SWAPFILE}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_SWAPFILE}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_SWAPFILE}" "${GITLAB_SS_INSTALL_UBUNTU_SWAPFILE}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_SWAPFILE}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_SWAPFILE}" "${SOURCEFORGE_SS_INSTALL_UBUNTU_SWAPFILE}"
+
+## download ss-install-ubuntu-users from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_UBUNTU_USERS}" "${GITHUB_SS_INSTALL_UBUNTU_USERS}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_USERS}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_USERS}" "${GITLAB_SS_INSTALL_UBUNTU_USERS}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_USERS}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_USERS}" "${SOURCEFORGE_SS_INSTALL_UBUNTU_USERS}"
+
+## download ss-install-ubuntu-utils from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_UBUNTU_UTILS}" "${GITHUB_SS_INSTALL_UBUNTU_UTILS}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_UTILS}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_UTILS}" "${GITLAB_SS_INSTALL_UBUNTU_UTILS}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_UTILS}" || ss_wget "${TMP_SS_INSTALL_UBUNTU_UTILS}" "${SOURCEFORGE_SS_INSTALL_UBUNTU_UTILS}"
+
+## download ss-install-wordpress-cli from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_WORDPRESS_CLI}" "${GITHUB_SS_INSTALL_WORDPRESS_CLI}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_CLI}" || ss_wget "${TMP_SS_INSTALL_WORDPRESS_CLI}" "${GITLAB_SS_INSTALL_WORDPRESS_CLI}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_CLI}" || ss_wget "${TMP_SS_INSTALL_WORDPRESS_CLI}" "${SOURCEFORGE_SS_INSTALL_WORDPRESS_CLI}"
+
+## download ss-install-wordpress-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_WORDPRESS_CONFIG}" "${GITHUB_SS_INSTALL_WORDPRESS_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_CONFIG}" || ss_wget "${TMP_SS_INSTALL_WORDPRESS_CONFIG}" "${GITLAB_SS_INSTALL_WORDPRESS_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_CONFIG}" || ss_wget "${TMP_SS_INSTALL_WORDPRESS_CONFIG}" "${SOURCEFORGE_SS_INSTALL_WORDPRESS_CONFIG}"
+
+## download ss-install-wordpress-hovercraft from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_WORDPRESS_HOVERCRAFT}" "${GITHUB_SS_INSTALL_WORDPRESS_HOVERCRAFT}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_HOVERCRAFT}" || ss_wget "${TMP_SS_INSTALL_WORDPRESS_HOVERCRAFT}" "${GITLAB_SS_INSTALL_WORDPRESS_HOVERCRAFT}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_HOVERCRAFT}" || ss_wget "${TMP_SS_INSTALL_WORDPRESS_HOVERCRAFT}" "${SOURCEFORGE_SS_INSTALL_WORDPRESS_HOVERCRAFT}"
+
+## download ss-install-wordpress-mu-plugins from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_WORDPRESS_MU_PLUGINS}" "${GITHUB_SS_INSTALL_WORDPRESS_MU_PLUGINS}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_MU_PLUGINS}" || ss_wget "${TMP_SS_INSTALL_WORDPRESS_MU_PLUGINS}" "${GITLAB_SS_INSTALL_WORDPRESS_MU_PLUGINS}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_MU_PLUGINS}" || ss_wget "${TMP_SS_INSTALL_WORDPRESS_MU_PLUGINS}" "${SOURCEFORGE_SS_INSTALL_WORDPRESS_MU_PLUGINS}"
+
+## download ss-install-wordpress-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_INSTALL_WORDPRESS_PACKAGES}" "${GITHUB_SS_INSTALL_WORDPRESS_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_WORDPRESS_PACKAGES}" "${GITLAB_SS_INSTALL_WORDPRESS_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_PACKAGES}" || ss_wget "${TMP_SS_INSTALL_WORDPRESS_PACKAGES}" "${SOURCEFORGE_SS_INSTALL_WORDPRESS_PACKAGES}"
+
+## download ss-maintenance-disable from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_MAINTENANCE_DISABLE}" "${GITHUB_SS_MAINTENANCE_DISABLE}"
+ss_grep 'SS_EOF' "${TMP_SS_MAINTENANCE_DISABLE}" || ss_wget "${TMP_SS_MAINTENANCE_DISABLE}" "${GITLAB_SS_MAINTENANCE_DISABLE}"
+ss_grep 'SS_EOF' "${TMP_SS_MAINTENANCE_DISABLE}" || ss_wget "${TMP_SS_MAINTENANCE_DISABLE}" "${SOURCEFORGE_SS_MAINTENANCE_DISABLE}"
+
+## download ss-maintenance-enable from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_MAINTENANCE_ENABLE}" "${GITHUB_SS_MAINTENANCE_ENABLE}"
+ss_grep 'SS_EOF' "${TMP_SS_MAINTENANCE_ENABLE}" || ss_wget "${TMP_SS_MAINTENANCE_ENABLE}" "${GITLAB_SS_MAINTENANCE_ENABLE}"
+ss_grep 'SS_EOF' "${TMP_SS_MAINTENANCE_ENABLE}" || ss_wget "${TMP_SS_MAINTENANCE_ENABLE}" "${SOURCEFORGE_SS_MAINTENANCE_ENABLE}"
+
+## download ss-monitor-resources from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_MONITOR_RESOURCES}" "${GITHUB_SS_MONITOR_RESOURCES}"
+ss_grep 'SS_EOF' "${TMP_SS_MONITOR_RESOURCES}" || ss_wget "${TMP_SS_MONITOR_RESOURCES}" "${GITLAB_SS_MONITOR_RESOURCES}"
+ss_grep 'SS_EOF' "${TMP_SS_MONITOR_RESOURCES}" || ss_wget "${TMP_SS_MONITOR_RESOURCES}" "${SOURCEFORGE_SS_MONITOR_RESOURCES}"
+
+## download ss-optimize-database from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_OPTIMIZE_DATABASE}" "${GITHUB_SS_OPTIMIZE_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_OPTIMIZE_DATABASE}" || ss_wget "${TMP_SS_OPTIMIZE_DATABASE}" "${GITLAB_SS_OPTIMIZE_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_OPTIMIZE_DATABASE}" || ss_wget "${TMP_SS_OPTIMIZE_DATABASE}" "${SOURCEFORGE_SS_OPTIMIZE_DATABASE}"
+
+## download ss-optimize-files from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_OPTIMIZE_FILES}" "${GITHUB_SS_OPTIMIZE_FILES}"
+ss_grep 'SS_EOF' "${TMP_SS_OPTIMIZE_FILES}" || ss_wget "${TMP_SS_OPTIMIZE_FILES}" "${GITLAB_SS_OPTIMIZE_FILES}"
+ss_grep 'SS_EOF' "${TMP_SS_OPTIMIZE_FILES}" || ss_wget "${TMP_SS_OPTIMIZE_FILES}" "${SOURCEFORGE_SS_OPTIMIZE_FILES}"
+
+## download ss-perms from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS}" "${GITHUB_SS_PERMS}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS}" || ss_wget "${TMP_SS_PERMS}" "${GITLAB_SS_PERMS}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS}" || ss_wget "${TMP_SS_PERMS}" "${SOURCEFORGE_SS_PERMS}"
+
+## download ss-perms-iptables-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_IPTABLES_CONFIG}" "${GITHUB_SS_PERMS_IPTABLES_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_IPTABLES_CONFIG}" || ss_wget "${TMP_SS_PERMS_IPTABLES_CONFIG}" "${GITLAB_SS_PERMS_IPTABLES_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_IPTABLES_CONFIG}" || ss_wget "${TMP_SS_PERMS_IPTABLES_CONFIG}" "${SOURCEFORGE_SS_PERMS_IPTABLES_CONFIG}"
+
+## download ss-perms-iptables-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_IPTABLES_PACKAGES}" "${GITHUB_SS_PERMS_IPTABLES_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_IPTABLES_PACKAGES}" || ss_wget "${TMP_SS_PERMS_IPTABLES_PACKAGES}" "${GITLAB_SS_PERMS_IPTABLES_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_IPTABLES_PACKAGES}" || ss_wget "${TMP_SS_PERMS_IPTABLES_PACKAGES}" "${SOURCEFORGE_SS_PERMS_IPTABLES_PACKAGES}"
+
+## download ss-perms-memcached-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_MEMCACHED_CONFIG}" "${GITHUB_SS_PERMS_MEMCACHED_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MEMCACHED_CONFIG}" || ss_wget "${TMP_SS_PERMS_MEMCACHED_CONFIG}" "${GITLAB_SS_PERMS_MEMCACHED_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MEMCACHED_CONFIG}" || ss_wget "${TMP_SS_PERMS_MEMCACHED_CONFIG}" "${SOURCEFORGE_SS_PERMS_MEMCACHED_CONFIG}"
+
+## download ss-perms-memcached-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_MEMCACHED_PACKAGES}" "${GITHUB_SS_PERMS_MEMCACHED_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MEMCACHED_PACKAGES}" || ss_wget "${TMP_SS_PERMS_MEMCACHED_PACKAGES}" "${GITLAB_SS_PERMS_MEMCACHED_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MEMCACHED_PACKAGES}" || ss_wget "${TMP_SS_PERMS_MEMCACHED_PACKAGES}" "${SOURCEFORGE_SS_PERMS_MEMCACHED_PACKAGES}"
+
+## download ss-perms-mysql-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_MYSQL_CONFIG}" "${GITHUB_SS_PERMS_MYSQL_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MYSQL_CONFIG}" || ss_wget "${TMP_SS_PERMS_MYSQL_CONFIG}" "${GITLAB_SS_PERMS_MYSQL_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MYSQL_CONFIG}" || ss_wget "${TMP_SS_PERMS_MYSQL_CONFIG}" "${SOURCEFORGE_SS_PERMS_MYSQL_CONFIG}"
+
+## download ss-perms-mysql-database from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_MYSQL_DATABASE}" "${GITHUB_SS_PERMS_MYSQL_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MYSQL_DATABASE}" || ss_wget "${TMP_SS_PERMS_MYSQL_DATABASE}" "${GITLAB_SS_PERMS_MYSQL_DATABASE}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MYSQL_DATABASE}" || ss_wget "${TMP_SS_PERMS_MYSQL_DATABASE}" "${SOURCEFORGE_SS_PERMS_MYSQL_DATABASE}"
+
+## download ss-perms-mySQL-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_MYSQL_PACKAGES}" "${GITHUB_SS_PERMS_MYSQL_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MYSQL_PACKAGES}" || ss_wget "${TMP_SS_PERMS_MYSQL_PACKAGES}" "${GITLAB_SS_PERMS_MYSQL_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MYSQL_PACKAGES}" || ss_wget "${TMP_SS_PERMS_MYSQL_PACKAGES}" "${SOURCEFORGE_SS_PERMS_MYSQL_PACKAGES}"
+
+## download ss-perms-nginx-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_NGINX_CONFIG}" "${GITHUB_SS_PERMS_NGINX_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_NGINX_CONFIG}" || ss_wget "${TMP_SS_PERMS_NGINX_CONFIG}" "${GITLAB_SS_PERMS_NGINX_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_NGINX_CONFIG}" || ss_wget "${TMP_SS_PERMS_NGINX_CONFIG}" "${SOURCEFORGE_SS_PERMS_NGINX_CONFIG}"
+
+## download ss-perms-nginx-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_NGINX_PACKAGES}" "${GITHUB_SS_PERMS_NGINX_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_NGINX_PACKAGES}" || ss_wget "${TMP_SS_PERMS_NGINX_PACKAGES}" "${GITLAB_SS_PERMS_NGINX_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_NGINX_PACKAGES}" || ss_wget "${TMP_SS_PERMS_NGINX_PACKAGES}" "${SOURCEFORGE_SS_PERMS_NGINX_PACKAGES}"
+
+## download ss-perms-php-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_PHP_CONFIG}" "${GITHUB_SS_PERMS_PHP_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_PHP_CONFIG}" || ss_wget "${TMP_SS_PERMS_PHP_CONFIG}" "${GITLAB_SS_PERMS_PHP_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_PHP_CONFIG}" || ss_wget "${TMP_SS_PERMS_PHP_CONFIG}" "${SOURCEFORGE_SS_PERMS_PHP_CONFIG}"
+
+## download ss-perms-php-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_PHP_PACKAGES}" "${GITHUB_SS_PERMS_PHP_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_PHP_PACKAGES}" || ss_wget "${TMP_SS_PERMS_PHP_PACKAGES}" "${GITLAB_SS_PERMS_PHP_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_PHP_PACKAGES}" || ss_wget "${TMP_SS_PERMS_PHP_PACKAGES}" "${SOURCEFORGE_SS_PERMS_PHP_PACKAGES}"
+
+## download ss-perms-rclone-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_RCLONE_CONFIG}" "${GITHUB_SS_PERMS_RCLONE_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_RCLONE_CONFIG}" || ss_wget "${TMP_SS_PERMS_RCLONE_CONFIG}" "${GITLAB_SS_PERMS_RCLONE_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_RCLONE_CONFIG}" || ss_wget "${TMP_SS_PERMS_RCLONE_CONFIG}" "${SOURCEFORGE_SS_PERMS_RCLONE_CONFIG}"
+
+## download ss-perms-rclone-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_RCLONE_PACKAGES}" "${GITHUB_SS_PERMS_RCLONE_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_RCLONE_PACKAGES}" || ss_wget "${TMP_SS_PERMS_RCLONE_PACKAGES}" "${GITLAB_SS_PERMS_RCLONE_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_RCLONE_PACKAGES}" || ss_wget "${TMP_SS_PERMS_RCLONE_PACKAGES}" "${SOURCEFORGE_SS_PERMS_RCLONE_PACKAGES}"
+
+## download ss-perms-ubuntu-bash from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_UBUNTU_BASH}" "${GITHUB_SS_PERMS_UBUNTU_BASH}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_BASH}" || ss_wget "${TMP_SS_PERMS_UBUNTU_BASH}" "${GITLAB_SS_PERMS_UBUNTU_BASH}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_BASH}" || ss_wget "${TMP_SS_PERMS_UBUNTU_BASH}" "${SOURCEFORGE_SS_PERMS_UBUNTU_BASH}"
+
+## download ss-perms-ubuntu-crontab from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_UBUNTU_CRONTAB}" "${GITHUB_SS_PERMS_UBUNTU_CRONTAB}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_CRONTAB}" || ss_wget "${TMP_SS_PERMS_UBUNTU_CRONTAB}" "${GITLAB_SS_PERMS_UBUNTU_CRONTAB}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_CRONTAB}" || ss_wget "${TMP_SS_PERMS_UBUNTU_CRONTAB}" "${SOURCEFORGE_SS_PERMS_UBUNTU_CRONTAB}"
+
+## download ss-perms-ubuntu-kernel from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_UBUNTU_KERNEL}" "${GITHUB_SS_PERMS_UBUNTU_KERNEL}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_KERNEL}" || ss_wget "${TMP_SS_PERMS_UBUNTU_KERNEL}" "${GITLAB_SS_PERMS_UBUNTU_KERNEL}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_KERNEL}" || ss_wget "${TMP_SS_PERMS_UBUNTU_KERNEL}" "${SOURCEFORGE_SS_PERMS_UBUNTU_KERNEL}"
+
+## download ss-perms-ubuntu-ssh from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_UBUNTU_SSH}" "${GITHUB_SS_PERMS_UBUNTU_SSH}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_SSH}" || ss_wget "${TMP_SS_PERMS_UBUNTU_SSH}" "${GITLAB_SS_PERMS_UBUNTU_SSH}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_SSH}" || ss_wget "${TMP_SS_PERMS_UBUNTU_SSH}" "${SOURCEFORGE_SS_PERMS_UBUNTU_SSH}"
+
+## download ss-perms-ubuntu-swapfile from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_UBUNTU_SWAPFILE}" "${GITHUB_SS_PERMS_UBUNTU_SWAPFILE}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_SWAPFILE}" || ss_wget "${TMP_SS_PERMS_UBUNTU_SWAPFILE}" "${GITLAB_SS_PERMS_UBUNTU_SWAPFILE}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_SWAPFILE}" || ss_wget "${TMP_SS_PERMS_UBUNTU_SWAPFILE}" "${SOURCEFORGE_SS_PERMS_UBUNTU_SWAPFILE}"
+
+## download ss-perms-ubuntu-users from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_UBUNTU_USERS}" "${GITHUB_SS_PERMS_UBUNTU_USERS}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_USERS}" || ss_wget "${TMP_SS_PERMS_UBUNTU_USERS}" "${GITLAB_SS_PERMS_UBUNTU_USERS}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_USERS}" || ss_wget "${TMP_SS_PERMS_UBUNTU_USERS}" "${SOURCEFORGE_SS_PERMS_UBUNTU_USERS}"
+
+## download ss-perms-ubuntu-utils from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_UBUNTU_UTILS}" "${GITHUB_SS_PERMS_UBUNTU_UTILS}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_UTILS}" || ss_wget "${TMP_SS_PERMS_UBUNTU_UTILS}" "${GITLAB_SS_PERMS_UBUNTU_UTILS}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_UTILS}" || ss_wget "${TMP_SS_PERMS_UBUNTU_UTILS}" "${SOURCEFORGE_SS_PERMS_UBUNTU_UTILS}"
+
+## download ss-perms-wordpress-cli from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_WORDPRESS_CLI}" "${GITHUB_SS_PERMS_WORDPRESS_CLI}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_CLI}" || ss_wget "${TMP_SS_PERMS_WORDPRESS_CLI}" "${GITLAB_SS_PERMS_WORDPRESS_CLI}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_CLI}" || ss_wget "${TMP_SS_PERMS_WORDPRESS_CLI}" "${SOURCEFORGE_SS_PERMS_WORDPRESS_CLI}"
+
+## download ss-perms-wordpress-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_WORDPRESS_CONFIG}" "${GITHUB_SS_PERMS_WORDPRESS_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_CONFIG}" || ss_wget "${TMP_SS_PERMS_WORDPRESS_CONFIG}" "${GITLAB_SS_PERMS_WORDPRESS_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_CONFIG}" || ss_wget "${TMP_SS_PERMS_WORDPRESS_CONFIG}" "${SOURCEFORGE_SS_PERMS_WORDPRESS_CONFIG}"
+
+## download ss-perms-wordpress-mu-plugins from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_WORDPRESS_MU_PLUGINS}" "${GITHUB_SS_PERMS_WORDPRESS_MU_PLUGINS}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_MU_PLUGINS}" || ss_wget "${TMP_SS_PERMS_WORDPRESS_MU_PLUGINS}" "${GITLAB_SS_PERMS_WORDPRESS_MU_PLUGINS}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_MU_PLUGINS}" || ss_wget "${TMP_SS_PERMS_WORDPRESS_MU_PLUGINS}" "${SOURCEFORGE_SS_PERMS_WORDPRESS_MU_PLUGINS}"
+
+## download ss-perms-wordpress-packages from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PERMS_WORDPRESS_PACKAGES}" "${GITHUB_SS_PERMS_WORDPRESS_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_PACKAGES}" || ss_wget "${TMP_SS_PERMS_WORDPRESS_PACKAGES}" "${GITLAB_SS_PERMS_WORDPRESS_PACKAGES}"
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_PACKAGES}" || ss_wget "${TMP_SS_PERMS_WORDPRESS_PACKAGES}" "${SOURCEFORGE_SS_PERMS_WORDPRESS_PACKAGES}"
+
+## download ss-purge-nginx from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PURGE_NGINX}" "${GITHUB_SS_PURGE_NGINX}"
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_NGINX}" || ss_wget "${TMP_SS_PURGE_NGINX}" "${GITLAB_SS_PURGE_NGINX}"
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_NGINX}" || ss_wget "${TMP_SS_PURGE_NGINX}" "${SOURCEFORGE_SS_PURGE_NGINX}"
+
+## download ss-purge-opcache from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PURGE_OPCACHE}" "${GITHUB_SS_PURGE_OPCACHE}"
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_OPCACHE}" || ss_wget "${TMP_SS_PURGE_OPCACHE}" "${GITLAB_SS_PURGE_OPCACHE}"
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_OPCACHE}" || ss_wget "${TMP_SS_PURGE_OPCACHE}" "${SOURCEFORGE_SS_PURGE_OPCACHE}"
+
+## download ss-purge-memcached from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PURGE_MEMCACHED}" "${GITHUB_SS_PURGE_MEMCACHED}"
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_MEMCACHED}" || ss_wget "${TMP_SS_PURGE_MEMCACHED}" "${GITLAB_SS_PURGE_MEMCACHED}"
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_MEMCACHED}" || ss_wget "${TMP_SS_PURGE_MEMCACHED}" "${SOURCEFORGE_SS_PURGE_MEMCACHED}"
+
+## download ss-purge-transients from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PURGE_TRANSIENTS}" "${GITHUB_SS_PURGE_TRANSIENTS}"
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_TRANSIENTS}" || ss_wget "${TMP_SS_PURGE_TRANSIENTS}" "${GITLAB_SS_PURGE_TRANSIENTS}"
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_TRANSIENTS}" || ss_wget "${TMP_SS_PURGE_TRANSIENTS}" "${SOURCEFORGE_SS_PURGE_TRANSIENTS}"
+
+## download ss-push-development from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PUSH_DEVELOPMENT}" "${GITHUB_SS_PUSH_DEVELOPMENT}"
+ss_grep 'SS_EOF' "${TMP_SS_PUSH_DEVELOPMENT}" || ss_wget "${TMP_SS_PUSH_DEVELOPMENT}" "${GITLAB_SS_PUSH_DEVELOPMENT}"
+ss_grep 'SS_EOF' "${TMP_SS_PUSH_DEVELOPMENT}" || ss_wget "${TMP_SS_PUSH_DEVELOPMENT}" "${SOURCEFORGE_SS_PUSH_DEVELOPMENT}"
+
+## download ss-push-staging from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_PUSH_STAGING}" "${GITHUB_SS_PUSH_STAGING}"
+ss_grep 'SS_EOF' "${TMP_SS_PUSH_STAGING}" || ss_wget "${TMP_SS_PUSH_STAGING}" "${GITLAB_SS_PUSH_STAGING}"
+ss_grep 'SS_EOF' "${TMP_SS_PUSH_STAGING}" || ss_wget "${TMP_SS_PUSH_STAGING}" "${SOURCEFORGE_SS_PUSH_STAGING}"
+
+## download ss-reboot-machine from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_REBOOT_MACHINE}" "${GITHUB_SS_REBOOT_MACHINE}"
+ss_grep 'SS_EOF' "${TMP_SS_REBOOT_MACHINE}" || ss_wget "${TMP_SS_REBOOT_MACHINE}" "${GITLAB_SS_REBOOT_MACHINE}"
+ss_grep 'SS_EOF' "${TMP_SS_REBOOT_MACHINE}" || ss_wget "${TMP_SS_REBOOT_MACHINE}" "${SOURCEFORGE_SS_REBOOT_MACHINE}"
+
+## download ss-remote-backup from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_REMOTE_BACKUP}" "${GITHUB_SS_REMOTE_BACKUP}"
+ss_grep 'SS_EOF' "${TMP_SS_REMOTE_BACKUP}" || ss_wget "${TMP_SS_REMOTE_BACKUP}" "${GITLAB_SS_REMOTE_BACKUP}"
+ss_grep 'SS_EOF' "${TMP_SS_REMOTE_BACKUP}" || ss_wget "${TMP_SS_REMOTE_BACKUP}" "${SOURCEFORGE_SS_REMOTE_BACKUP}"
+
+## download ss-reset-password-sftp from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_RESET_PASSWORD_SFTP}" "${GITHUB_SS_RESET_PASSWORD_SFTP}"
+ss_grep 'SS_EOF' "${TMP_SS_RESET_PASSWORD_SFTP}" || ss_wget "${TMP_SS_RESET_PASSWORD_SFTP}" "${GITLAB_SS_RESET_PASSWORD_SFTP}"
+ss_grep 'SS_EOF' "${TMP_SS_RESET_PASSWORD_SFTP}" || ss_wget "${TMP_SS_RESET_PASSWORD_SFTP}" "${SOURCEFORGE_SS_RESET_PASSWORD_SFTP}"
+
+## download ss-restart-fail2ban from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_RESTART_FAIL2BAN}" "${GITHUB_SS_RESTART_FAIL2BAN}"
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_FAIL2BAN}" || ss_wget "${TMP_SS_RESTART_FAIL2BAN}" "${GITLAB_SS_RESTART_FAIL2BAN}"
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_FAIL2BAN}" || ss_wget "${TMP_SS_RESTART_FAIL2BAN}" "${SOURCEFORGE_SS_RESTART_FAIL2BAN}"
+
+## download ss-restart-memcached from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_RESTART_MEMCACHED}" "${GITHUB_SS_RESTART_MEMCACHED}"
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_MEMCACHED}" || ss_wget "${TMP_SS_RESTART_MEMCACHED}" "${GITLAB_SS_RESTART_MEMCACHED}"
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_MEMCACHED}" || ss_wget "${TMP_SS_RESTART_MEMCACHED}" "${SOURCEFORGE_SS_RESTART_MEMCACHED}"
+
+## download ss-restart-mysql from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_RESTART_MYSQL}" "${GITHUB_SS_RESTART_MYSQL}"
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_MYSQL}" || ss_wget "${TMP_SS_RESTART_MYSQL}" "${GITLAB_SS_RESTART_MYSQL}"
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_MYSQL}" || ss_wget "${TMP_SS_RESTART_MYSQL}" "${SOURCEFORGE_SS_RESTART_MYSQL}"
+
+## download ss-restart-nginx from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_RESTART_NGINX}" "${GITHUB_SS_RESTART_NGINX}"
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_NGINX}" || ss_wget "${TMP_SS_RESTART_NGINX}" "${GITLAB_SS_RESTART_NGINX}"
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_NGINX}" || ss_wget "${TMP_SS_RESTART_NGINX}" "${SOURCEFORGE_SS_RESTART_NGINX}"
+
+## download ss-restart-php from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_RESTART_PHP}" "${GITHUB_SS_RESTART_PHP}"
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_PHP}" || ss_wget "${TMP_SS_RESTART_PHP}" "${GITLAB_SS_RESTART_PHP}"
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_PHP}" || ss_wget "${TMP_SS_RESTART_PHP}" "${SOURCEFORGE_SS_RESTART_PHP}"
+
+## download ss-stack-overview from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_STACK_OVERVIEW}" "${GITHUB_SS_STACK_OVERVIEW}"
+ss_grep 'SS_EOF' "${TMP_SS_STACK_OVERVIEW}" || ss_wget "${TMP_SS_STACK_OVERVIEW}" "${GITLAB_SS_STACK_OVERVIEW}"
+ss_grep 'SS_EOF' "${TMP_SS_STACK_OVERVIEW}" || ss_wget "${TMP_SS_STACK_OVERVIEW}" "${SOURCEFORGE_SS_STACK_OVERVIEW}"
+
+## download ss-sync-development from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_SYNC_DEVELOPMENT}" "${GITHUB_SS_SYNC_DEVELOPMENT}"
+ss_grep 'SS_EOF' "${TMP_SS_SYNC_DEVELOPMENT}" || ss_wget "${TMP_SS_SYNC_DEVELOPMENT}" "${GITLAB_SS_SYNC_DEVELOPMENT}"
+ss_grep 'SS_EOF' "${TMP_SS_SYNC_DEVELOPMENT}" || ss_wget "${TMP_SS_SYNC_DEVELOPMENT}" "${SOURCEFORGE_SS_SYNC_DEVELOPMENT}"
+
+## download ss-sync-staging from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_SYNC_STAGING}" "${GITHUB_SS_SYNC_STAGING}"
+ss_grep 'SS_EOF' "${TMP_SS_SYNC_STAGING}" || ss_wget "${TMP_SS_SYNC_STAGING}" "${GITLAB_SS_SYNC_STAGING}"
+ss_grep 'SS_EOF' "${TMP_SS_SYNC_STAGING}" || ss_wget "${TMP_SS_SYNC_STAGING}" "${SOURCEFORGE_SS_SYNC_STAGING}"
+
+## download ss-update-config from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_UPDATE_CONFIG}" "${GITHUB_SS_UPDATE_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_UPDATE_CONFIG}" || ss_wget "${TMP_SS_UPDATE_CONFIG}" "${GITLAB_SS_UPDATE_CONFIG}"
+ss_grep 'SS_EOF' "${TMP_SS_UPDATE_CONFIG}" || ss_wget "${TMP_SS_UPDATE_CONFIG}" "${SOURCEFORGE_SS_UPDATE_CONFIG}"
+
+## download ss-update-modules from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_UPDATE_MODULES}" "${GITHUB_SS_UPDATE_MODULES}"
+ss_grep 'SS_EOF' "${TMP_SS_UPDATE_MODULES}" || ss_wget "${TMP_SS_UPDATE_MODULES}" "${GITLAB_SS_UPDATE_MODULES}"
+ss_grep 'SS_EOF' "${TMP_SS_UPDATE_MODULES}" || ss_wget "${TMP_SS_UPDATE_MODULES}" "${SOURCEFORGE_SS_UPDATE_MODULES}"
+
+## download ss-worker from github first then gitlab then sourceforge ##
+ss_wget "${TMP_SS_WORKER}" "${GITHUB_SS_WORKER}"
+ss_grep 'SS_EOF' "${TMP_SS_WORKER}" || ss_wget "${TMP_SS_WORKER}" "${GITLAB_SS_WORKER}"
+ss_grep 'SS_EOF' "${TMP_SS_WORKER}" || ss_wget "${TMP_SS_WORKER}" "${SOURCEFORGE_SS_WORKER}"
+
+####################################################################################################
+#### G. SS-Check: Install Cron Jobs ################################################################
+####################################################################################################
+
+## here we install all the downloaded cron job files to their permanent location paths ##
+## the root crontab will run the cron jobs which in turn run the bash scripts ##
+
+## install 00-crontab only if valid ##
+ss_grep 'SS_EOF' "${TMP_00_CRONTAB}" && ss_mv "${TMP_00_CRONTAB}" "${PATH_00_CRONTAB}"
+
+## install 01-cron-minutely only if valid ##
+ss_grep 'SS_EOF' "${TMP_01_CRON_MINUTELY}" && ss_mv "${TMP_01_CRON_MINUTELY}" "${PATH_01_CRON_MINUTELY}"
+
+## install 02-cron-often only if valid ##
+ss_grep 'SS_EOF' "${TMP_02_CRON_OFTEN}" && ss_mv "${TMP_02_CRON_OFTEN}" "${PATH_02_CRON_OFTEN}"
+
+## install 03-cron-regular only if valid ##
+ss_grep 'SS_EOF' "${TMP_03_CRON_REGULAR}" && ss_mv "${TMP_03_CRON_REGULAR}" "${PATH_03_CRON_REGULAR}"
+
+## install 04-cron-quarter-hourly only if valid ##
+ss_grep 'SS_EOF' "${TMP_04_CRON_QUARTER_HOURLY}" && ss_mv "${TMP_04_CRON_QUARTER_HOURLY}" "${PATH_04_CRON_QUARTER_HOURLY}"
+
+## install 05-cron-half-hourly only if valid ##
+ss_grep 'SS_EOF' "${TMP_05_CRON_HALF_HOURLY}" && ss_mv "${TMP_05_CRON_HALF_HOURLY}" "${PATH_05_CRON_HALF_HOURLY}"
+
+## install 06-cron-hourly only if valid ##
+ss_grep 'SS_EOF' "${TMP_06_CRON_HOURLY}" && ss_mv "${TMP_06_CRON_HOURLY}" "${PATH_06_CRON_HOURLY}"
+
+## install 07-cron-quarter-daily only if valid ##
+ss_grep 'SS_EOF' "${TMP_07_CRON_QUARTER_DAILY}" && ss_mv "${TMP_07_CRON_QUARTER_DAILY}" "${PATH_07_CRON_QUARTER_DAILY}"
+
+## install 08-cron-half-daily only if valid ##
+ss_grep 'SS_EOF' "${TMP_08_CRON_HALF_DAILY}" && ss_mv "${TMP_08_CRON_HALF_DAILY}" "${PATH_08_CRON_HALF_DAILY}"
+
+## install 09-cron-daily only if valid ##
+ss_grep 'SS_EOF' "${TMP_09_CRON_DAILY}" && ss_mv "${TMP_09_CRON_DAILY}" "${PATH_09_CRON_DAILY}"
+
+## install 10-cron-half-weekly only if valid ##
+ss_grep 'SS_EOF' "${TMP_10_CRON_HALF_WEEKLY}" && ss_mv "${TMP_10_CRON_HALF_WEEKLY}" "${PATH_10_CRON_HALF_WEEKLY}"
+
+## install 11-cron-weekly only if valid ##
+ss_grep 'SS_EOF' "${TMP_11_CRON_WEEKLY}" && ss_mv "${TMP_11_CRON_WEEKLY}" "${PATH_11_CRON_WEEKLY}"
+
+## install 12-cron-half-monthly only if valid ##
+ss_grep 'SS_EOF' "${TMP_12_CRON_HALF_MONTHLY}" && ss_mv "${TMP_12_CRON_HALF_MONTHLY}" "${PATH_12_CRON_HALF_MONTHLY}"
+
+## install 13-cron-monthly only if valid ##
+ss_grep 'SS_EOF' "${TMP_13_CRON_MONTHLY}" && ss_mv "${TMP_13_CRON_MONTHLY}" "${PATH_13_CRON_MONTHLY}"
+
+## install 14-cron-sometimes only if valid ##
+ss_grep 'SS_EOF' "${TMP_14_CRON_SOMETIMES}" && ss_mv "${TMP_14_CRON_SOMETIMES}" "${PATH_14_CRON_SOMETIMES}"
+
+####################################################################################################
+#### H. SS-Check: Install Custom Cron Job Boilerplates (If Not Exist) ##############################
+####################################################################################################
+
+## here we install boilerplates for custom cron jobs if none are found on your server ##
+## you can then edit these files as needed and they will never be overwritten ##
+
+## install 01-cron-minutely-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_01_CRON_MINUTELY_CUSTOM}" && ss_cp_if_not_exists "${TMP_01_CRON_MINUTELY_CUSTOM}" "${PATH_01_CRON_MINUTELY_CUSTOM}"
+
+## install 02-cron-often-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_02_CRON_OFTEN_CUSTOM}" && ss_cp_if_not_exists "${TMP_02_CRON_OFTEN_CUSTOM}" "${PATH_02_CRON_OFTEN_CUSTOM}"
+
+## install 03-cron-regular-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_03_CRON_REGULAR_CUSTOM}" && ss_cp_if_not_exists "${TMP_03_CRON_REGULAR_CUSTOM}" "${PATH_03_CRON_REGULAR_CUSTOM}"
+
+## install 04-cron-quarter-hourly-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_04_CRON_QUARTER_HOURLY_CUSTOM}" && ss_cp_if_not_exists "${TMP_04_CRON_QUARTER_HOURLY_CUSTOM}" "${PATH_04_CRON_QUARTER_HOURLY_CUSTOM}"
+
+## install 05-cron-half-hourly-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_05_CRON_HALF_HOURLY_CUSTOM}" && ss_cp_if_not_exists "${TMP_05_CRON_HALF_HOURLY_CUSTOM}" "${PATH_05_CRON_HALF_HOURLY_CUSTOM}"
+
+## install 06-cron-hourly-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_06_CRON_HOURLY_CUSTOM}" && ss_cp_if_not_exists "${TMP_06_CRON_HOURLY_CUSTOM}" "${PATH_06_CRON_HOURLY_CUSTOM}"
+
+## install 07-cron-quarter-daily-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_07_CRON_QUARTER_DAILY_CUSTOM}" && ss_cp_if_not_exists "${TMP_07_CRON_QUARTER_DAILY_CUSTOM}" "${PATH_07_CRON_QUARTER_DAILY_CUSTOM}"
+
+## install 08-cron-half-daily-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_08_CRON_HALF_DAILY_CUSTOM}" && ss_cp_if_not_exists "${TMP_08_CRON_HALF_DAILY_CUSTOM}" "${PATH_08_CRON_HALF_DAILY_CUSTOM}"
+
+## install 09-cron-daily-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_09_CRON_DAILY_CUSTOM}" && ss_cp_if_not_exists "${TMP_09_CRON_DAILY_CUSTOM}" "${PATH_09_CRON_DAILY_CUSTOM}"
+
+## install 10-cron-half-weekly-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_10_CRON_HALF_WEEKLY_CUSTOM}" && ss_cp_if_not_exists "${TMP_10_CRON_HALF_WEEKLY_CUSTOM}" "${PATH_10_CRON_HALF_WEEKLY_CUSTOM}"
+
+## install 11-cron-weekly-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_11_CRON_WEEKLY_CUSTOM}" && ss_cp_if_not_exists "${TMP_11_CRON_WEEKLY_CUSTOM}" "${PATH_11_CRON_WEEKLY_CUSTOM}"
+
+## install 12-cron-half-monthly-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_12_CRON_HALF_MONTHLY_CUSTOM}" && ss_cp_if_not_exists "${TMP_12_CRON_HALF_MONTHLY_CUSTOM}" "${PATH_12_CRON_HALF_MONTHLY_CUSTOM}"
+
+## install 13-cron-monthly-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_13_CRON_MONTHLY_CUSTOM}" && ss_cp_if_not_exists "${TMP_13_CRON_MONTHLY_CUSTOM}" "${PATH_13_CRON_MONTHLY_CUSTOM}"
+
+## install 14-cron-sometimes-custom only if valid ##
+ss_grep 'SS_EOF' "${TMP_14_CRON_SOMETIMES_CUSTOM}" && ss_cp_if_not_exists "${TMP_14_CRON_SOMETIMES_CUSTOM}" "${PATH_14_CRON_SOMETIMES_CUSTOM}"
+
+####################################################################################################
+#### I. SS-Check: Install Bash Scripts (Except SS-Check) ###########################################
+####################################################################################################
+
+## here we install all the downloaded bash scripts to their permanent location paths ##
+## the root crontab will run the cron jobs which in turn run the bash scripts ##
+
+## install ss-clean-database only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_CLEAN_DATABASE}" && ss_mv "${TMP_SS_CLEAN_DATABASE}" "${PATH_SS_CLEAN_DATABASE}"
+
+## install ss-clean-files only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_CLEAN_FILES}" && ss_mv "${TMP_SS_CLEAN_FILES}" "${PATH_SS_CLEAN_FILES}"
+
+## install ss-config-sample only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_CONFIG_SAMPLE}" && ss_mv "${TMP_SS_CONFIG_SAMPLE}" "${PATH_SS_CONFIG_SAMPLE}"
+
+## install ss-dump-database only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_DUMP_DATABASE}" && ss_mv "${TMP_SS_DUMP_DATABASE}" "${PATH_SS_DUMP_DATABASE}"
+
+## install ss-dump-files only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_DUMP_FILES}" && ss_mv "${TMP_SS_DUMP_FILES}" "${PATH_SS_DUMP_FILES}"
+
+## install ss-empty-logs only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_EMPTY_LOGS}" && ss_mv "${TMP_SS_EMPTY_LOGS}" "${PATH_SS_EMPTY_LOGS}"
+
+## install ss-encrypt-acme only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_ENCRYPT_ACME}" && ss_mv "${TMP_SS_ENCRYPT_ACME}" "${PATH_SS_ENCRYPT_ACME}"
+
+## install ss-encrypt-certbot only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_ENCRYPT_CERTBOT}" && ss_mv "${TMP_SS_ENCRYPT_CERTBOT}" "${PATH_SS_ENCRYPT_CERTBOT}"
+
+## install ss-encrypt-openssl only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_ENCRYPT_OPENSSL}" && ss_mv "${TMP_SS_ENCRYPT_OPENSSL}" "${PATH_SS_ENCRYPT_OPENSSL}"
+
+## install ss-functions only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_FUNCTIONS}" && ss_mv "${TMP_SS_FUNCTIONS}" "${PATH_SS_FUNCTIONS}"
+
+## install ss-import-database only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_IMPORT_DATABASE}" && ss_mv "${TMP_SS_IMPORT_DATABASE}" "${PATH_SS_IMPORT_DATABASE}"
+
+## install ss-import-files only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_IMPORT_FILES}" && ss_mv "${TMP_SS_IMPORT_FILES}" "${PATH_SS_IMPORT_FILES}"
+
+## install ss-install only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL}" && ss_mv "${TMP_SS_INSTALL}" "${PATH_SS_INSTALL}"
+
+## install ss-install-fail2ban-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_FAIL2BAN_CONFIG}" && ss_mv "${TMP_SS_INSTALL_FAIL2BAN_CONFIG}" "${PATH_SS_INSTALL_FAIL2BAN_CONFIG}"
+
+## install ss-install-fail2ban-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_FAIL2BAN_PACKAGES}" && ss_mv "${TMP_SS_INSTALL_FAIL2BAN_PACKAGES}" "${PATH_SS_INSTALL_FAIL2BAN_PACKAGES}"
+
+## install ss-install-iptables-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_IPTABLES_CONFIG}" && ss_mv "${TMP_SS_INSTALL_IPTABLES_CONFIG}" "${PATH_SS_INSTALL_IPTABLES_CONFIG}"
+
+## install ss-install-iptables-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_IPTABLES_PACKAGES}" && ss_mv "${TMP_SS_INSTALL_IPTABLES_PACKAGES}" "${PATH_SS_INSTALL_IPTABLES_PACKAGES}"
+
+## install ss-install-memcached-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MEMCACHED_CONFIG}" && ss_mv "${TMP_SS_INSTALL_MEMCACHED_CONFIG}" "${PATH_SS_INSTALL_MEMCACHED_CONFIG}"
+
+## install ss-install-memcached-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MEMCACHED_PACKAGES}" && ss_mv "${TMP_SS_INSTALL_MEMCACHED_PACKAGES}" "${PATH_SS_INSTALL_MEMCACHED_PACKAGES}"
+
+## install ss-install-mysql-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MYSQL_CONFIG}" && ss_mv "${TMP_SS_INSTALL_MYSQL_CONFIG}" "${PATH_SS_INSTALL_MYSQL_CONFIG}"
+
+## install ss-install-mysql-database only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MYSQL_DATABASE}" && ss_mv "${TMP_SS_INSTALL_MYSQL_DATABASE}" "${PATH_SS_INSTALL_MYSQL_DATABASE}"
+
+## install ss-install-mysql-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_MYSQL_PACKAGES}" && ss_mv "${TMP_SS_INSTALL_MYSQL_PACKAGES}" "${PATH_SS_INSTALL_MYSQL_PACKAGES}"
+
+## install ss-install-nginx-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_NGINX_CONFIG}" && ss_mv "${TMP_SS_INSTALL_NGINX_CONFIG}" "${PATH_SS_INSTALL_NGINX_CONFIG}"
+
+## install ss-install-nginx-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_NGINX_PACKAGES}" && ss_mv "${TMP_SS_INSTALL_NGINX_PACKAGES}" "${PATH_SS_INSTALL_NGINX_PACKAGES}"
+
+## install ss-install-php-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_PHP_CONFIG}" && ss_mv "${TMP_SS_INSTALL_PHP_CONFIG}" "${PATH_SS_INSTALL_PHP_CONFIG}"
+
+## install ss-install-php-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_PHP_PACKAGES}" && ss_mv "${TMP_SS_INSTALL_PHP_PACKAGES}" "${PATH_SS_INSTALL_PHP_PACKAGES}"
+
+## install ss-install-rclone-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_RCLONE_CONFIG}" && ss_mv "${TMP_SS_INSTALL_RCLONE_CONFIG}" "${PATH_SS_INSTALL_RCLONE_CONFIG}"
+
+## install ss-install-rclone-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_RCLONE_PACKAGES}" && ss_mv "${TMP_SS_INSTALL_RCLONE_PACKAGES}" "${PATH_SS_INSTALL_RCLONE_PACKAGES}"
+
+## install ss-install-ubuntu-bash only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_BASH}" && ss_mv "${TMP_SS_INSTALL_UBUNTU_BASH}" "${PATH_SS_INSTALL_UBUNTU_BASH}"
+
+## install ss-install-ubuntu-crontab only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_CRONTAB}" && ss_mv "${TMP_SS_INSTALL_UBUNTU_CRONTAB}" "${PATH_SS_INSTALL_UBUNTU_CRONTAB}"
+
+## install ss-install-ubuntu-kernel only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_KERNEL}" && ss_mv "${TMP_SS_INSTALL_UBUNTU_KERNEL}" "${PATH_SS_INSTALL_UBUNTU_KERNEL}"
+
+## install ss-install-ubuntu-ssh only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_SSH}" && ss_mv "${TMP_SS_INSTALL_UBUNTU_SSH}" "${PATH_SS_INSTALL_UBUNTU_SSH}"
+
+## install ss-install-ubuntu-swapfile only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_SWAPFILE}" && ss_mv "${TMP_SS_INSTALL_UBUNTU_SWAPFILE}" "${PATH_SS_INSTALL_UBUNTU_SWAPFILE}"
+
+## install ss-install-ubuntu-users only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_USERS}" && ss_mv "${TMP_SS_INSTALL_UBUNTU_USERS}" "${PATH_SS_INSTALL_UBUNTU_USERS}"
+
+## install ss-install-ubuntu-utils only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_UBUNTU_UTILS}" && ss_mv "${TMP_SS_INSTALL_UBUNTU_UTILS}" "${PATH_SS_INSTALL_UBUNTU_UTILS}"
+
+## install ss-install-wordpress-cli only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_CLI}" && ss_mv "${TMP_SS_INSTALL_WORDPRESS_CLI}" "${PATH_SS_INSTALL_WORDPRESS_CLI}"
+
+## install ss-install-wordpress-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_CONFIG}" && ss_mv "${TMP_SS_INSTALL_WORDPRESS_CONFIG}" "${PATH_SS_INSTALL_WORDPRESS_CONFIG}"
+
+## install ss-install-wordpress-mu-plugins only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_MU_PLUGINS}" && ss_mv "${TMP_SS_INSTALL_WORDPRESS_MU_PLUGINS}" "${PATH_SS_INSTALL_WORDPRESS_MU_PLUGINS}"
+
+## install ss-install-wordpress-hovercraft only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_HOVERCRAFT}" && ss_mv "${TMP_SS_INSTALL_WORDPRESS_HOVERCRAFT}" "${PATH_SS_INSTALL_WORDPRESS_HOVERCRAFT}"
+
+## install ss-install-wordpress-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_INSTALL_WORDPRESS_PACKAGES}" && ss_mv "${TMP_SS_INSTALL_WORDPRESS_PACKAGES}" "${PATH_SS_INSTALL_WORDPRESS_PACKAGES}"
+
+## install ss-maintenance-disable only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_MAINTENANCE_DISABLE}" && ss_mv "${TMP_SS_MAINTENANCE_DISABLE}" "${PATH_SS_MAINTENANCE_DISABLE}"
+
+## install ss-maintenance-enable only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_MAINTENANCE_ENABLE}" && ss_mv "${TMP_SS_MAINTENANCE_ENABLE}" "${PATH_SS_MAINTENANCE_ENABLE}"
+
+## install ss-monitor-resources only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_MONITOR_RESOURCES}" && ss_mv "${TMP_SS_MONITOR_RESOURCES}" "${PATH_SS_MONITOR_RESOURCES}"
+
+## install ss-optimize-database only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_OPTIMIZE_DATABASE}" && ss_mv "${TMP_SS_OPTIMIZE_DATABASE}" "${PATH_SS_OPTIMIZE_DATABASE}"
+
+## install ss-optimize-files only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_OPTIMIZE_FILES}" && ss_mv "${TMP_SS_OPTIMIZE_FILES}" "${PATH_SS_OPTIMIZE_FILES}"
+
+## install ss-perms only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS}" && ss_mv "${TMP_SS_PERMS}" "${PATH_SS_PERMS}"
+
+## install ss-perms-iptables-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_IPTABLES_CONFIG}" && ss_mv "${TMP_SS_PERMS_IPTABLES_CONFIG}" "${PATH_SS_PERMS_IPTABLES_CONFIG}"
+
+## install ss-perms-iptables-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_IPTABLES_PACKAGES}" && ss_mv "${TMP_SS_PERMS_IPTABLES_PACKAGES}" "${PATH_SS_PERMS_IPTABLES_PACKAGES}"
+
+## install ss-perms-memcached-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MEMCACHED_CONFIG}" && ss_mv "${TMP_SS_PERMS_MEMCACHED_CONFIG}" "${PATH_SS_PERMS_MEMCACHED_CONFIG}"
+
+## install ss-perms-memcached-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MEMCACHED_PACKAGES}" && ss_mv "${TMP_SS_PERMS_MEMCACHED_PACKAGES}" "${PATH_SS_PERMS_MEMCACHED_PACKAGES}"
+
+## install ss-perms-mysql-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MYSQL_CONFIG}" && ss_mv "${TMP_SS_PERMS_MYSQL_CONFIG}" "${PATH_SS_PERMS_MYSQL_CONFIG}"
+
+## install ss-perms-mysql-database only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MYSQL_DATABASE}" && ss_mv "${TMP_SS_PERMS_MYSQL_DATABASE}" "${PATH_SS_PERMS_MYSQL_DATABASE}"
+
+## install ss-perms-mysql-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_MYSQL_PACKAGES}" && ss_mv "${TMP_SS_PERMS_MYSQL_PACKAGES}" "${PATH_SS_PERMS_MYSQL_PACKAGES}"
+
+## install ss-perms-nginx-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_NGINX_CONFIG}" && ss_mv "${TMP_SS_PERMS_NGINX_CONFIG}" "${PATH_SS_PERMS_NGINX_CONFIG}"
+
+## install ss-perms-nginx-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_NGINX_PACKAGES}" && ss_mv "${TMP_SS_PERMS_NGINX_PACKAGES}" "${PATH_SS_PERMS_NGINX_PACKAGES}"
+
+## install ss-perms-php-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_PHP_CONFIG}" && ss_mv "${TMP_SS_PERMS_PHP_CONFIG}" "${PATH_SS_PERMS_PHP_CONFIG}"
+
+## install ss-perms-php-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_PHP_PACKAGES}" && ss_mv "${TMP_SS_PERMS_PHP_PACKAGES}" "${PATH_SS_PERMS_PHP_PACKAGES}"
+
+## install ss-perms-rclone-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_RCLONE_CONFIG}" && ss_mv "${TMP_SS_PERMS_RCLONE_CONFIG}" "${PATH_SS_PERMS_RCLONE_CONFIG}"
+
+## install ss-perms-rclone-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_RCLONE_PACKAGES}" && ss_mv "${TMP_SS_PERMS_RCLONE_PACKAGES}" "${PATH_SS_PERMS_RCLONE_PACKAGES}"
+
+## install ss-perms-ubuntu-bash only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_BASH}" && ss_mv "${TMP_SS_PERMS_UBUNTU_BASH}" "${PATH_SS_PERMS_UBUNTU_BASH}"
+
+## install ss-perms-ubuntu-crontab only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_CRONTAB}" && ss_mv "${TMP_SS_PERMS_UBUNTU_CRONTAB}" "${PATH_SS_PERMS_UBUNTU_CRONTAB}"
+
+## install ss-perms-ubuntu-kernel only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_KERNEL}" && ss_mv "${TMP_SS_PERMS_UBUNTU_KERNEL}" "${PATH_SS_PERMS_UBUNTU_KERNEL}"
+
+## install ss-perms-ubuntu-ssh only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_SSH}" && ss_mv "${TMP_SS_PERMS_UBUNTU_SSH}" "${PATH_SS_PERMS_UBUNTU_SSH}"
+
+## install ss-perms-ubuntu-swapfile only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_SWAPFILE}" && ss_mv "${TMP_SS_PERMS_UBUNTU_SWAPFILE}" "${PATH_SS_PERMS_UBUNTU_SWAPFILE}"
+
+## install ss-perms-ubuntu-users only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_USERS}" && ss_mv "${TMP_SS_PERMS_UBUNTU_USERS}" "${PATH_SS_PERMS_UBUNTU_USERS}"
+
+## install ss-perms-ubuntu-utils only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_UBUNTU_UTILS}" && ss_mv "${TMP_SS_PERMS_UBUNTU_UTILS}" "${PATH_SS_PERMS_UBUNTU_UTILS}"
+
+## install ss-perms-wordpress-cli only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_CLI}" && ss_mv "${TMP_SS_PERMS_WORDPRESS_CLI}" "${PATH_SS_PERMS_WORDPRESS_CLI}"
+
+## install ss-perms-wordpress-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_CONFIG}" && ss_mv "${TMP_SS_PERMS_WORDPRESS_CONFIG}" "${PATH_SS_PERMS_WORDPRESS_CONFIG}"
+
+## install ss-perms-wordpress-mu-plugins only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_MU_PLUGINS}" && ss_mv "${TMP_SS_PERMS_WORDPRESS_MU_PLUGINS}" "${PATH_SS_PERMS_WORDPRESS_MU_PLUGINS}"
+
+## install ss-perms-wordpress-packages only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PERMS_WORDPRESS_PACKAGES}" && ss_mv "${TMP_SS_PERMS_WORDPRESS_PACKAGES}" "${PATH_SS_PERMS_WORDPRESS_PACKAGES}"
+
+## install ss-purge only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_NGINX}" && ss_mv "${TMP_SS_PURGE_NGINX}" "${PATH_SS_PURGE_NGINX}"
+
+## install ss-purge-opcache only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_OPCACHE}" && ss_mv "${TMP_SS_PURGE_OPCACHE}" "${PATH_SS_PURGE_OPCACHE}"
+
+## install ss-purge-memcached only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_MEMCACHED}" && ss_mv "${TMP_SS_PURGE_MEMCACHED}" "${PATH_SS_PURGE_MEMCACHED}"
+
+## install ss-purge-transients only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PURGE_TRANSIENTS}" && ss_mv "${TMP_SS_PURGE_TRANSIENTS}" "${PATH_SS_PURGE_TRANSIENTS}"
+
+## install ss-push-development only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PUSH_DEVELOPMENT}" && ss_mv "${TMP_SS_PUSH_DEVELOPMENT}" "${PATH_SS_PUSH_DEVELOPMENT}"
+
+## install ss-push-staging only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_PUSH_STAGING}" && ss_mv "${TMP_SS_PUSH_STAGING}" "${PATH_SS_PUSH_STAGING}"
+
+## install ss-reboot-machine only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_REBOOT_MACHINE}" && ss_mv "${TMP_SS_REBOOT_MACHINE}" "${PATH_SS_REBOOT_MACHINE}"
+
+## install ss-remote-backup only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_REMOTE_BACKUP}" && ss_mv "${TMP_SS_REMOTE_BACKUP}" "${PATH_SS_REMOTE_BACKUP}"
+
+## install ss-reset-password-sftp only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_RESET_PASSWORD_SFTP}" && ss_mv "${TMP_SS_RESET_PASSWORD_SFTP}" "${PATH_SS_RESET_PASSWORD_SFTP}"
+
+## install ss-restart-fail2ban only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_FAIL2BAN}" && ss_mv "${TMP_SS_RESTART_FAIL2BAN}" "${PATH_SS_RESTART_FAIL2BAN}"
+
+## install ss-restart-memcached only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_MEMCACHED}" && ss_mv "${TMP_SS_RESTART_MEMCACHED}" "${PATH_SS_RESTART_MEMCACHED}"
+
+## install ss-restart-mysql only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_MYSQL}" && ss_mv "${TMP_SS_RESTART_MYSQL}" "${PATH_SS_RESTART_MYSQL}"
+
+## install ss-restart-nginx only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_NGINX}" && ss_mv "${TMP_SS_RESTART_NGINX}" "${PATH_SS_RESTART_NGINX}"
+
+## install ss-restart-php only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_RESTART_PHP}" && ss_mv "${TMP_SS_RESTART_PHP}" "${PATH_SS_RESTART_PHP}"
+
+## install ss-stack-overview only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_STACK_OVERVIEW}" && ss_mv "${TMP_SS_STACK_OVERVIEW}" "${PATH_SS_STACK_OVERVIEW}"
+
+## install ss-sync-development only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_SYNC_DEVELOPMENT}" && ss_mv "${TMP_SS_SYNC_DEVELOPMENT}" "${PATH_SS_SYNC_DEVELOPMENT}"
+
+## install ss-sync-staging only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_SYNC_STAGING}" && ss_mv "${TMP_SS_SYNC_STAGING}" "${PATH_SS_SYNC_STAGING}"
+
+## install ss-update-config only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_UPDATE_CONFIG}" && ss_mv "${TMP_SS_UPDATE_CONFIG}" "${PATH_SS_UPDATE_CONFIG}"
+
+## install ss-update-modules only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_UPDATE_MODULES}" && ss_mv "${TMP_SS_UPDATE_MODULES}" "${PATH_SS_UPDATE_MODULES}"
+
+## install ss-worker only if valid ##
+ss_grep 'SS_EOF' "${TMP_SS_WORKER}" && ss_mv "${TMP_SS_WORKER}" "${PATH_SS_WORKER}"
+
+####################################################################################################
+#### SlickStack: Reset Permissions (SlickStack Scripts) ############################################
+####################################################################################################
+
+## we include this permissions reset in all cron jobs and bash scripts for redundancy ##
+## chmod 0700 means only the root/sudo users can execute any SlickStack scripts ##
+
+## THIS SNIPPET DOES NOT RELY ON SS-CONFIG OR SS-FUNCTIONS
+## SNIPPET: ss bash scripts, ss cron jobs
+## UPDATED: 02JUL2022
+
+chown root:root /var/www/ss* ## must be root:root
+chown root:root /var/www/crons/*cron* ## must be root:root
+chown root:root /var/www/crons/custom/*cron* ## must be root:root
+chmod 0700 /var/www/ss* ## 0700 means only root/sudo can execute
+chmod 0700 /var/www/crons/*cron* ## 0700 means only root/sudo can execute
+chmod 0700 /var/www/crons/custom/*cron* ## 0700 means only root/sudo can execute
+
+####################################################################################################
+#### SlickStack: External References Used To Improve This Script (Thanks, Interwebz) ###############
+####################################################################################################
+
+## Ref: ChatGPT
+## Ref: https://linuxize.com/post/bash-functions/
+## Ref: https://stackoverflow.com/questions/6366530/bash-syntax-error-unexpected-end-of-file
+## Ref: https://gist.github.com/onnimonni/b49779ebc96216771a6be3de46449fa1
+## Ref: https://www.putorius.net/linux-checksum-file-integrity-check.html
+## Ref: https://unix.stackexchange.com/questions/254868/use-md5sum-to-verify-file-in-a-script
+## Ref: https://unix.stackexchange.com/questions/118085/transform-a-directory-into-file-or-a-file-into-directory
+
+## SS_EOF
